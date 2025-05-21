@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>paint renderer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+        #control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .control-group input[type="range"] {
+            width: 200px;
+        }
+        .control-group input[type="color"] {
+            width: 50px;
+            height: 30px;
+            margin-left: 10px;
+        }
+        .value-display {
+            display: inline-block;
+            min-width: 40px;
+            margin-left: 10px;
+            color: #666;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="control-panel">
+        <h3>繪圖參數控制</h3>
+        <div class="control-group">
+            <label>自定義顏色（用逗號分隔，例如：#ff0000,#00ff00,#0000ff）：
+                <textarea id="custom-colors" rows="3" style="width: 100%; margin-top: 5px;">#fff,#fff,#2176ff,#33a1fd,#fdca40,#f79824,#f72585,#7209b7,#3a0ca3,#4361ee,#4cc9f0</textarea>
+            </label>
+            <button id="apply-colors-btn">套用顏色</button>
+        </div>
+        <div class="control-group">
+            <label>粒子大小範圍：
+                <span class="value-display" id="size-value">1-10</span>
+            </label>
+            <input type="range" id="min-size" min="1" max="20" value="1" step="1">
+            <input type="range" id="max-size" min="1" max="20" value="10" step="1">
+        </div>
+        <div class="control-group">
+            <label>粒子密度：
+                <span class="value-display" id="density-value">50</span>
+            </label>
+            <input type="range" id="density" min="20" max="100" value="50" step="1">
+        </div>
+        <div class="control-group">
+            <label>粒子速度：
+                <span class="value-display" id="speed-value">1</span>
+            </label>
+            <input type="range" id="speed" min="0.1" max="2" value="1" step="0.1">
+        </div>
+        <div class="control-group">
+            <label>粒子減速：
+                <span class="value-display" id="deceleration-value">0.9995</span>
+            </label>
+            <input type="range" id="deceleration" min="0.99" max="0.9999" value="0.9995" step="0.0001">
+        </div>
+        <div class="control-group">
+            <label>顏色變化速度：
+                <span class="value-display" id="color-change-value">0.02</span>
+            </label>
+            <input type="range" id="color-change" min="0.001" max="0.1" value="0.02" step="0.001">
+        </div>
+        <div class="control-group">
+            <label>粒子縮小速度：
+                <span class="value-display" id="shrink-value">0.99</span>
+            </label>
+            <input type="range" id="shrink" min="0.9" max="0.999" value="0.99" step="0.001">
+        </div>
+        <div class="control-group">
+            <label>波形選擇：
+                <select id="wave-type" style="width: 100%; margin-top: 5px;">
+                    <option value="default">預設正弦波</option>
+                    <option value="spiral">螺旋運動</option>
+                    <option value="ripple">漣漪效果</option>
+                    <option value="multi">多重波形</option>
+                    <option value="time">時間變化波</option>
+                    <option value="circular">圓形波</option>
+                </select>
+            </label>
+        </div>
+        <div class="control-group wave-params" id="default-params">
+            <label>基礎頻率：
+                <span class="value-display" id="base-freq-value">100</span>
+            </label>
+            <input type="range" id="base-freq" min="20" max="200" value="100" step="1">
+        </div>
+        <div class="control-group wave-params" id="spiral-params" style="display: none;">
+            <label>螺旋速度：
+                <span class="value-display" id="spiral-speed-value">50</span>
+            </label>
+            <input type="range" id="spiral-speed" min="10" max="100" value="50" step="1">
+        </div>
+        <div class="control-group wave-params" id="ripple-params" style="display: none;">
+            <label>漣漪速度：
+                <span class="value-display" id="ripple-speed-value">30</span>
+            </label>
+            <input type="range" id="ripple-speed" min="10" max="100" value="30" step="1">
+            <label>漣漪大小：
+                <span class="value-display" id="ripple-size-value">50</span>
+            </label>
+            <input type="range" id="ripple-size" min="20" max="200" value="50" step="1">
+        </div>
+        <div class="control-group wave-params" id="multi-params" style="display: none;">
+            <label>第二頻率：
+                <span class="value-display" id="second-freq-value">50</span>
+            </label>
+            <input type="range" id="second-freq" min="20" max="200" value="50" step="1">
+        </div>
+        <div class="control-group wave-params" id="time-params" style="display: none;">
+            <label>時間速度：
+                <span class="value-display" id="time-speed-value">100</span>
+            </label>
+            <input type="range" id="time-speed" min="20" max="200" value="100" step="1">
+        </div>
+        <div class="control-group wave-params" id="circular-params" style="display: none;">
+            <label>圓形波速度：
+                <span class="value-display" id="circular-speed-value">50</span>
+            </label>
+            <input type="range" id="circular-speed" min="10" max="100" value="50" step="1">
+        </div>
+        <button id="reset-btn">重置參數</button>
+        <button id="random-colors-btn">隨機顏色</button>
+    </div>
+    <script>
+    /* source: https://openprocessing.org/sketch/2251267 by Che-Yu Wu*/
+    let particles = []
+    //let colors = "21295c-1b3b6f-065a82-1c7293-9eb3c2-fff".split("-").map(a=>"#"+a)
+    let colors = "fff-fff-2176ff-33a1fd-fdca40-f79824-f72585-7209b7-3a0ca3-4361ee-4cc9f0".split("-").map(a=>"#"+a)
+    let mainGraphics
+    let canvasTexture 
+
+    // 參數控制
+    let params = {
+        minSize: 1,
+        maxSize: 10,
+        density: 50,
+        speed: 1,
+        deceleration: 0.9995,
+        colorChangeSpeed: 0.02,
+        shrinkSpeed: 0.99,
+        waveMin: 30,
+        waveMax: 80
+    }
+
+    // 波形參數
+    let waveParams = {
+        type: 'default',
+        baseFreq: 100,
+        spiralSpeed: 50,
+        rippleSpeed: 30,
+        rippleSize: 50,
+        secondFreq: 50,
+        timeSpeed: 100,
+        circularSpeed: 50
+    }
+
+    function setup() {
+        createCanvas(1920,1080)
+        mainGraphics = createGraphics(width,height)
+        canvasTexture = loadImage("canvas.jpg")
+        background(100)
+        pixelDensity(2)
+        fill(0)
+        rect(0,0,width,height)
+        mainGraphics.noStroke()
+
+        // 設置控制面板事件監聽
+        setupControlPanel()
+        
+        // 初始化粒子
+        resetParticles()
+    }
+
+    function setupControlPanel() {
+        // 自定義顏色
+        document.getElementById('apply-colors-btn').addEventListener('click', function() {
+            const colorInput = document.getElementById('custom-colors').value
+            colors = colorInput.split(',').map(color => color.trim())
+            resetCanvasAndParticles()
+        })
+
+        // 粒子大小
+        document.getElementById('min-size').addEventListener('input', function(e) {
+            params.minSize = parseInt(e.target.value)
+            document.getElementById('size-value').textContent = `${params.minSize}-${params.maxSize}`
+            resetCanvasAndParticles()
+        })
+        document.getElementById('max-size').addEventListener('input', function(e) {
+            params.maxSize = parseInt(e.target.value)
+            document.getElementById('size-value').textContent = `${params.minSize}-${params.maxSize}`
+            resetCanvasAndParticles()
+        })
+
+        // 粒子密度
+        document.getElementById('density').addEventListener('input', function(e) {
+            params.density = parseInt(e.target.value)
+            document.getElementById('density-value').textContent = params.density
+            resetCanvasAndParticles()
+        })
+
+        // 粒子速度
+        document.getElementById('speed').addEventListener('input', function(e) {
+            params.speed = parseFloat(e.target.value)
+            document.getElementById('speed-value').textContent = params.speed
+            resetCanvasAndParticles()
+        })
+
+        // 粒子減速
+        document.getElementById('deceleration').addEventListener('input', function(e) {
+            params.deceleration = parseFloat(e.target.value)
+            document.getElementById('deceleration-value').textContent = params.deceleration
+            resetCanvasAndParticles()
+        })
+
+        // 顏色變化速度
+        document.getElementById('color-change').addEventListener('input', function(e) {
+            params.colorChangeSpeed = parseFloat(e.target.value)
+            document.getElementById('color-change-value').textContent = params.colorChangeSpeed
+            resetCanvasAndParticles()
+        })
+
+        // 粒子縮小速度
+        document.getElementById('shrink').addEventListener('input', function(e) {
+            params.shrinkSpeed = parseFloat(e.target.value)
+            document.getElementById('shrink-value').textContent = params.shrinkSpeed
+            resetCanvasAndParticles()
+        })
+
+        // 波形選擇
+        document.getElementById('wave-type').addEventListener('change', function(e) {
+            waveParams.type = e.target.value
+            // 隱藏所有波形參數
+            document.querySelectorAll('.wave-params').forEach(el => el.style.display = 'none')
+            // 顯示當前波形的參數
+            document.getElementById(e.target.value + '-params').style.display = 'block'
+            resetCanvasAndParticles()
+        })
+
+        // 基礎頻率
+        document.getElementById('base-freq').addEventListener('input', function(e) {
+            waveParams.baseFreq = parseInt(e.target.value)
+            document.getElementById('base-freq-value').textContent = waveParams.baseFreq
+            resetCanvasAndParticles()
+        })
+
+        // 螺旋速度
+        document.getElementById('spiral-speed').addEventListener('input', function(e) {
+            waveParams.spiralSpeed = parseInt(e.target.value)
+            document.getElementById('spiral-speed-value').textContent = waveParams.spiralSpeed
+            resetCanvasAndParticles()
+        })
+
+        // 漣漪參數
+        document.getElementById('ripple-speed').addEventListener('input', function(e) {
+            waveParams.rippleSpeed = parseInt(e.target.value)
+            document.getElementById('ripple-speed-value').textContent = waveParams.rippleSpeed
+            resetCanvasAndParticles()
+        })
+        document.getElementById('ripple-size').addEventListener('input', function(e) {
+            waveParams.rippleSize = parseInt(e.target.value)
+            document.getElementById('ripple-size-value').textContent = waveParams.rippleSize
+            resetCanvasAndParticles()
+        })
+
+        // 第二頻率
+        document.getElementById('second-freq').addEventListener('input', function(e) {
+            waveParams.secondFreq = parseInt(e.target.value)
+            document.getElementById('second-freq-value').textContent = waveParams.secondFreq
+            resetCanvasAndParticles()
+        })
+
+        // 時間速度
+        document.getElementById('time-speed').addEventListener('input', function(e) {
+            waveParams.timeSpeed = parseInt(e.target.value)
+            document.getElementById('time-speed-value').textContent = waveParams.timeSpeed
+            resetCanvasAndParticles()
+        })
+
+        // 圓形波速度
+        document.getElementById('circular-speed').addEventListener('input', function(e) {
+            waveParams.circularSpeed = parseInt(e.target.value)
+            document.getElementById('circular-speed-value').textContent = waveParams.circularSpeed
+            resetCanvasAndParticles()
+        })
+
+        // 重置按鈕
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            params = {
+                minSize: 1,
+                maxSize: 10,
+                density: 50,
+                speed: 1,
+                deceleration: 0.9995,
+                colorChangeSpeed: 0.02,
+                shrinkSpeed: 0.99,
+                waveMin: 30,
+                waveMax: 80
+            }
+            waveParams = {
+                type: 'default',
+                baseFreq: 100,
+                spiralSpeed: 50,
+                rippleSpeed: 30,
+                rippleSize: 50,
+                secondFreq: 50,
+                timeSpeed: 100,
+                circularSpeed: 50
+            }
+            document.getElementById('wave-type').value = 'default'
+            document.querySelectorAll('.wave-params').forEach(el => el.style.display = 'none')
+            document.getElementById('default-params').style.display = 'block'
+            updateControlPanelValues()
+            resetCanvasAndParticles()
+        })
+
+        // 隨機顏色按鈕
+        document.getElementById('random-colors-btn').addEventListener('click', function() {
+            colors = Array.from({length: 6}, () => '#' + Math.floor(Math.random()*16777215).toString(16))
+            colors = colors.concat(colors).concat(['#2176FF'])
+            resetCanvasAndParticles()
+        })
+    }
+
+    function updateControlPanelValues() {
+        document.getElementById('min-size').value = params.minSize
+        document.getElementById('max-size').value = params.maxSize
+        document.getElementById('density').value = params.density
+        document.getElementById('speed').value = params.speed
+        document.getElementById('deceleration').value = params.deceleration
+        document.getElementById('color-change').value = params.colorChangeSpeed
+        document.getElementById('shrink').value = params.shrinkSpeed
+        document.getElementById('wave-min').value = params.waveMin
+        document.getElementById('wave-max').value = params.waveMax
+
+        document.getElementById('size-value').textContent = `${params.minSize}-${params.maxSize}`
+        document.getElementById('density-value').textContent = params.density
+        document.getElementById('speed-value').textContent = params.speed
+        document.getElementById('deceleration-value').textContent = params.deceleration
+        document.getElementById('color-change-value').textContent = params.colorChangeSpeed
+        document.getElementById('shrink-value').textContent = params.shrinkSpeed
+        document.getElementById('wave-value').textContent = `${params.waveMin}-${params.waveMax}`
+    }
+
+    function resetCanvasAndParticles() {
+        // 清空畫布
+        mainGraphics.clear()
+        mainGraphics.fill(0)
+        mainGraphics.rect(0, 0, width, height)
+        
+        // 重置粒子
+        resetParticles()
+    }
+
+    function resetParticles() {
+        particles = []
+        let gridSpan = params.density/2
+        for(var x=0; x<=width; x+=gridSpan) {
+            for(var y=0; y<=height; y+=gridSpan) {
+                particles.push(new Particle({
+                    p: createVector(x,y),
+                    color: random(colors),
+                    r: random(params.minSize, params.maxSize),
+                    targetColor: random(colors),
+                    v: createVector(random([-1,0,1]) * params.speed, random([-1,1]) * params.speed),
+                    sinDiv: random(params.waveMin, params.waveMax)
+                }))
+            }
+        }
+    }
+
+    function draw() {
+        particles.forEach(p=>{
+            p.update()
+            p.draw(mainGraphics)
+        })
+        particles = particles.filter(p=>p.r>0.001)
+        image(mainGraphics,0,0)
+        push()
+            blendMode(MULTIPLY)
+            image(canvasTexture,0,0)
+        pop()
+    }
+
+    class Particle {
+        constructor(args) {
+            let def = {
+                p: createVector(0,0),
+                v: createVector(random([-1,0,1]), random([-1,1])),
+                a: createVector(0,0),
+                r: 30,
+                sinDiv: random(params.waveMin, params.waveMax),
+                randomId: int(random(50000)),
+                color: color('white'),
+                targetColor: color('white')
+            }
+            Object.assign(def, args)
+            Object.assign(this, def)
+        }
+
+        draw(mainGraphics) {
+            mainGraphics.push()
+                mainGraphics.translate(this.p)
+                mainGraphics.fill(this.color)
+                mainGraphics.ellipse(0,0,this.r,this.r)
+                if (random()<0.99) {
+                    mainGraphics.circle(random(-0.92,0.92)*this.r,random(-0.92,0.92)*this.r,this.r/8)
+                }
+            mainGraphics.pop()
+        }
+
+        update() {
+            this.p.add(this.v)
+            this.v.add(this.a)
+            this.v.mult(params.deceleration)
+
+            // 根據選擇的波形類型更新速度
+            switch(waveParams.type) {
+                case 'default':
+                    this.v.x += sin(this.p.x/(waveParams.baseFreq+this.randomId%5))/this.sinDiv
+                    this.v.y += sin(this.p.y/(waveParams.baseFreq+this.randomId%5))/this.sinDiv
+                    break
+                case 'spiral':
+                    this.v.x += sin(frameCount/waveParams.spiralSpeed) * cos(this.p.x/waveParams.baseFreq)/this.sinDiv
+                    this.v.y += cos(frameCount/waveParams.spiralSpeed) * sin(this.p.y/waveParams.baseFreq)/this.sinDiv
+                    break
+                case 'ripple':
+                    let dist = sqrt(this.p.x*this.p.x + this.p.y*this.p.y)
+                    this.v.x += sin(dist/waveParams.rippleSize + frameCount/waveParams.rippleSpeed)/this.sinDiv
+                    this.v.y += cos(dist/waveParams.rippleSize + frameCount/waveParams.rippleSpeed)/this.sinDiv
+                    break
+                case 'multi':
+                    this.v.x += (sin(this.p.x/waveParams.baseFreq) + sin(this.p.x/waveParams.secondFreq))/this.sinDiv
+                    this.v.y += (cos(this.p.y/waveParams.baseFreq) + cos(this.p.y/waveParams.secondFreq))/this.sinDiv
+                    break
+                case 'time':
+                    this.v.x += sin(this.p.x/waveParams.baseFreq + frameCount/waveParams.timeSpeed)/this.sinDiv
+                    this.v.y += sin(this.p.y/waveParams.baseFreq + frameCount/waveParams.timeSpeed)/this.sinDiv
+                    break
+                case 'circular':
+                    let angle = atan2(this.p.y, this.p.x)
+                    this.v.x += cos(angle + frameCount/waveParams.circularSpeed)/this.sinDiv
+                    this.v.y += sin(angle + frameCount/waveParams.circularSpeed)/this.sinDiv
+                    break
+            }
+
+            this.r *= params.shrinkSpeed
+            if ((frameCount+this.randomId) % 500==0) {
+                this.targetColor = random(colors)
+            }
+            this.color = lerpColor(color(this.color), color(this.targetColor), params.colorChangeSpeed)
+        }
+    }
+    </script>
+</body>
+</html>
