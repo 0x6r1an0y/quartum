@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Circuit Composer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      background: linear-gradient(45deg, #fff, #e0e7ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+
+    .controls-panel {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .control-group label {
+      font-weight: 600;
+      color: #4c1d95;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-group input {
+      padding: 0.75rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+      width: 100px;
+    }
+
+    .control-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .gates-section {
+      margin-bottom: 2rem;
+    }
+
+    .gates-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #4c1d95;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .gates-container {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .gate {
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-radius: 15px;
+      cursor: grab;
+      font-weight: 700;
+      font-size: 1.1rem;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      border: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .gate:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+
+    .gate:active {
+      cursor: grabbing;
+      transform: translateY(-1px) scale(0.98);
+    }
+
+    .circuit-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      overflow-x: auto;
+    }
+
+    .circuit-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #4c1d95;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 8px;
+      width: 100%;
+      min-width: 600px;
+    }
+
+    td {
+      border: 2px solid #e5e7eb;
+      text-align: center;
+      padding: 1rem;
+      min-width: 80px;
+      height: 80px;
+      position: relative;
+      border-radius: 12px;
+      background: white;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    td:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+    }
+
+    td[data-gate="H"] { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    td[data-gate="X"] { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+    td[data-gate="Y"] { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    td[data-gate="Z"] { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+    td[data-gate="C"] { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+    td[data-gate="D"] { background: linear-gradient(135deg, #ec4899, #db2777); color: white; }
+
+    .qubit-labels {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-right: 1rem;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 1rem;
+    }
+
+    .qubit-label {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #4c1d95;
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border-radius: 12px;
+      min-width: 60px;
+      border: 2px solid #bae6fd;
+    }
+
+    .circuit-wrapper {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    select {
+      font-size: 0.75rem;
+      margin: 2px 0;
+      padding: 0.25rem;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+    }
+
+    .output-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .output-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #4c1d95;
+      margin-bottom: 1rem;
+    }
+
+    pre {
+      background: linear-gradient(135deg, #1f2937, #374151);
+      color: #f9fafb;
+      padding: 1.5rem;
+      border-radius: 15px;
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+      border: 1px solid #4b5563;
+      font-size: 0.9rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .controls-row {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .gates-container {
+        justify-content: center;
+      }
+      
+      td {
+        min-width: 60px;
+        height: 60px;
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header fade-in">
+      <h1>Quantum Circuit Composer</h1>
+      <p>Design and simulate quantum circuits with an intuitive drag-and-drop interface</p>
+    </div>
+
+    <div class="controls-panel fade-in">
+      <div class="controls-row">
+        <div class="control-group">
+          <label>Qubits</label>
+          <input type="number" id="numQubits" min="1" max="6" value="3" onchange="renderCircuit()">
+        </div>
+        <div class="control-group">
+          <label>Columns</label>
+          <input type="number" id="numCols" min="1" max="12" value="6" onchange="renderCircuit()">
+        </div>
+      </div>
+      
+      <div class="gates-section">
+        <div class="gates-title">Quantum Gates</div>
+        <div class="gates-container">
+          <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="H" title="Hadamard Gate">H</div>
+          <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="X" title="Pauli-X Gate">X</div>
+          <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="Y" title="Pauli-Y Gate">Y</div>
+          <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="Z" title="Pauli-Z Gate">Z</div>
+          <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="C" title="CNOT Gate">C</div>
+          <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="D" title="Toffoli Gate">D</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="circuit-container fade-in">
+      <div class="circuit-title">Circuit Design</div>
+      <div class="circuit-wrapper">
+        <div class="qubit-labels" id="qubitLabels"></div>
+        <table id="circuitTable"></table>
+      </div>
+    </div>
+
+    <div class="output-section fade-in">
+      <div class="output-title">Quantum State Vector</div>
+      <pre id="output">Drag gates onto the circuit to see the quantum state evolution...</pre>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+  <script>
+    let circuitMeta = {};
+
+    function handleDrag(ev) {
+      ev.dataTransfer.setData("text", ev.target.dataset.gate);
+      ev.target.style.opacity = '0.5';
+    }
+
+    function handleDragEnd(ev) {
+      ev.target.style.opacity = '1';
+    }
+
+    // Add dragend event to all gates
+    document.querySelectorAll('.gate').forEach(gate => {
+      gate.addEventListener('dragend', handleDragEnd);
+    });
+
+    function allowDrop(ev) { 
+      ev.preventDefault(); 
+      const currentGate = ev.currentTarget.getAttribute('data-gate');
+      if (!currentGate) {
+        ev.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+      }
+    }
+
+    function handleDragLeave(ev) {
+      const currentGate = ev.currentTarget.getAttribute('data-gate');
+      if (!currentGate) {
+        ev.currentTarget.style.background = 'white';
+      }
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      
+      // 重置背景，但保持已存在gate的顏色
+      const currentGate = ev.currentTarget.getAttribute('data-gate');
+      if (!currentGate) {
+        ev.currentTarget.style.background = '';
+      }
+      
+      const gate = ev.dataTransfer.getData("text");
+      const td = ev.target.closest('td');
+      if (!td) return;
+      
+      const row = td.parentElement.rowIndex;
+      const col = td.cellIndex;
+      
+      // Add animation effect
+      td.style.transform = 'scale(1.1)';
+      setTimeout(() => {
+        td.style.transform = '';
+      }, 200);
+
+      if (gate === "C") {
+        td.innerHTML = gate + '<br>Ctrl:<select class="control-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="simulate()">' + makeQubitOptions() + '</select>';
+        td.setAttribute("data-gate", gate);
+      } else if (gate === "D") {
+        td.innerHTML = gate + '<br>C1:<select class="ctrl1-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>C2:<select class="ctrl2-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="simulate()">' + makeQubitOptions() + '</select>';
+        td.setAttribute("data-gate", gate);
+      } else {
+        td.textContent = gate;
+        td.setAttribute("data-gate", gate);
+      }
+      simulate();
+    }
+
+    function clearGate(ev) {
+      if (ev.target.tagName === "SELECT" || ev.target.tagName === "OPTION") return;
+      
+      const td = ev.currentTarget;
+      td.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        td.style.transform = '';
+      }, 150);
+      
+      td.textContent = "";
+      td.setAttribute("data-gate", "");
+      simulate();
+    }
+
+    function makeQubitOptions() {
+      const nq = +document.getElementById("numQubits").value;
+      return Array.from({length: nq}, (_, i) => `<option value='${i}'>q${i}</option>`).join('');
+    }
+
+    function renderCircuit() {
+      const nq = +document.getElementById("numQubits").value;
+      const nc = +document.getElementById("numCols").value;
+      const table = document.getElementById("circuitTable");
+      const labels = document.getElementById("qubitLabels");
+      
+      table.innerHTML = "";
+      labels.innerHTML = "";
+      
+      // Create qubit labels
+      for (let r = 0; r < nq; r++) {
+        const label = document.createElement("div");
+        label.className = "qubit-label";
+        label.textContent = `|q${r}⟩`;
+        labels.appendChild(label);
+      }
+      
+      // Create circuit table
+      for (let r = 0; r < nq; r++) {
+        const row = document.createElement("tr");
+        for (let c = 0; c < nc; c++) {
+          const cell = document.createElement("td");
+          cell.setAttribute("data-gate", "");
+          cell.ondrop = drop;
+          cell.ondragover = allowDrop;
+          cell.ondragleave = handleDragLeave;
+          cell.onclick = clearGate;
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+      simulate();
+    }
+
+    // Quantum simulation code (unchanged)
+    const H = [[1/Math.sqrt(2),1/Math.sqrt(2)],[1/Math.sqrt(2),-1/Math.sqrt(2)]];
+    const X = [[0,1],[1,0]];
+    const Y = [[0, math.complex(0, -1)],[math.complex(0, 1), 0]];
+    const Z = [[1,0],[0,-1]];
+    const I = [[1,0],[0,1]];
+
+    function kron(a, b) {
+      const result = [];
+      for (let i = 0; i < a.length; i++) {
+        for (let j = 0; j < b.length; j++) {
+          result.push(a[i].map(x => b[j].map(y => math.multiply(x, y))).flat());
+        }
+      }
+      return result;
+    }
+
+    function applyGate(state, matrix) {
+      const res = Array(state.length).fill(0).map(_ => math.complex(0, 0));
+      for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix.length; j++) {
+          res[i] = math.add(res[i], math.multiply(matrix[i][j], state[j]));
+        }
+      }
+      return res;
+    }
+
+    function createCNOT(n, control, target) {
+      const size = 1 << n;
+      const mat = Array.from({ length: size }, () => Array(size).fill(math.complex(0, 0)));
+      for (let i = 0; i < size; i++) {
+        const bit = (i >> (n - 1 - control)) & 1;
+        let j = i;
+        if (bit) j ^= (1 << (n - 1 - target));
+        mat[j][i] = math.complex(1, 0);
+      }
+      return mat;
+    }
+
+    function createToffoli(n, c1, c2, target) {
+      const size = 1 << n;
+      const mat = Array.from({ length: size }, () => Array(size).fill(math.complex(0, 0)));
+      for (let i = 0; i < size; i++) {
+        const b1 = (i >> (n - 1 - c1)) & 1;
+        const b2 = (i >> (n - 1 - c2)) & 1;
+        let j = i;
+        if (b1 && b2) j ^= (1 << (n - 1 - target));
+        mat[j][i] = math.complex(1, 0);
+      }
+      return mat;
+    }
+
+    function simulate() {
+      const nq = +document.getElementById("numQubits").value;
+      const table = document.getElementById("circuitTable");
+      if (!table.rows.length) return;
+      
+      const nc = table.rows[0].cells.length;
+      let state = Array(1 << nq).fill(math.complex(0, 0));
+      state[0] = math.complex(1, 0);
+
+      for (let c = 0; c < nc; c++) {
+        let hasCNOT = false;
+        for (let r = 0; r < nq; r++) {
+          const cell = table.rows[r].cells[c];
+          const g = cell.getAttribute("data-gate") || "I";
+          if (g === "C") {
+            const ctrlSel = cell.querySelector(".control-select");
+            const trgtSel = cell.querySelector(".target-select");
+            if (!ctrlSel || !trgtSel) continue;
+            const control = +ctrlSel.value;
+            const target = +trgtSel.value;
+            const U = createCNOT(nq, control, target);
+            state = applyGate(state, U);
+            hasCNOT = true;
+          } else if (g === "D") {
+            const ctrl1Sel = cell.querySelector(".ctrl1-select");
+            const ctrl2Sel = cell.querySelector(".ctrl2-select");
+            const trgtSel = cell.querySelector(".target-select");
+            if (!ctrl1Sel || !ctrl2Sel || !trgtSel) continue;
+            const c1 = +ctrl1Sel.value;
+            const c2 = +ctrl2Sel.value;
+            const target = +trgtSel.value;
+            const U = createToffoli(nq, c1, c2, target);
+            state = applyGate(state, U);
+            hasCNOT = true;
+          }
+        }
+        if (!hasCNOT) {
+          const gates = [];
+          for (let r = 0; r < nq; r++) {
+            const cell = table.rows[r].cells[c];
+            const g = cell.getAttribute("data-gate") || "I";
+            gates.push(({ H, X, Y, Z, I })[g] || I);
+          }
+          const U = gates.reduce((a, b) => kron(a, b));
+          state = applyGate(state, U);
+        }
+      }
+
+      let out = "";
+      const nonZeroStates = [];
+      for (let i = 0; i < state.length; i++) {
+        if (math.abs(state[i]) > 1e-6) {
+          const bin = i.toString(2).padStart(nq, '0');
+          nonZeroStates.push(`${state[i].toString()} |${bin}⟩`);
+        }
+      }
+      
+      if (nonZeroStates.length > 0) {
+        out = nonZeroStates.join('\n');
+      } else {
+        out = "No significant amplitude states found.";
+      }
+      
+      document.getElementById("output").textContent = out;
+    }
+
+    // Initialize
+    renderCircuit();
+  </script>
+</body>
+</html>
