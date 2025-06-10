@@ -42,7 +42,6 @@ Q-art/
 
 ## 技術實現
 
-- 使用 iframe 分離不同功能模組
 - 透過 postMessage API 進行跨 iframe 通訊
 - 量子電路模擬使用 math.js 函式庫
 - 視覺渲染使用 p5.js 函式庫
