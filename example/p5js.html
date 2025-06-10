@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流動粒子系統</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let particles = [];
+        const particleCount = 300;
+        const maxSpeed = 3;
+        const attractionForce = 0.2;
+        const repulsionRadius = 100;
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            colorMode(HSB, 360, 100, 100, 1);
+            background(0);
+            
+            // 初始化粒子
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function draw() {
+            // 半透明背景，創造拖尾效果
+            background(0, 0, 0, 0.1);
+            
+            // 更新並顯示所有粒子
+            for (let particle of particles) {
+                particle.update();
+                particle.display();
+            }
+        }
+        
+        class Particle {
+            constructor() {
+                // 隨機位置
+                this.pos = createVector(random(width), random(height));
+                // 隨機速度
+                this.vel = createVector(random(-1, 1), random(-1, 1));
+                this.acc = createVector(0, 0);
+                // 隨機大小
+                this.size = random(2, 8);
+                // 隨機基本色彩
+                this.baseHue = random(360);
+                this.hue = this.baseHue;
+                this.brightness = random(70, 100);
+                this.alpha = random(0.5, 0.9);
+                // 用於緩慢移動的偏移量
+                this.offsetX = random(1000);
+                this.offsetY = random(1000);
+            }
+            
+            update() {
+                // 追隨滑鼠
+                if (mouseIsPressed || touches.length > 0) {
+                    let target;
+                    if (mouseIsPressed) {
+                        target = createVector(mouseX, mouseY);
+                    } else {
+                        target = createVector(touches[0].x, touches[0].y);
+                    }
+                    
+                    let direction = p5.Vector.sub(target, this.pos);
+                    let distance = direction.mag();
+                    
+                    // 在一定範圍內被吸引
+                    if (distance < repulsionRadius) {
+                        direction.mult(-1); // 近距離排斥
+                    }
+                    
+                    direction.normalize();
+                    direction.mult(attractionForce);
+                    this.acc.add(direction);
+                }
+                
+                // 添加一些隨機運動
+                let n = noise(this.offsetX, this.offsetY, frameCount * 0.01);
+                let noiseForce = map(n, 0, 1, -0.05, 0.05);
+                let noiseAngle = map(n, 0, 1, 0, TWO_PI);
+                let noiseVector = p5.Vector.fromAngle(noiseAngle);
+                noiseVector.mult(noiseForce);
+                this.acc.add(noiseVector);
+                
+                // 更新速度和位置
+                this.vel.add(this.acc);
+                this.vel.limit(maxSpeed);
+                this.pos.add(this.vel);
+                this.acc.mult(0);
+                
+                // 邊界檢查 - 從另一邊出現
+                if (this.pos.x < 0) this.pos.x = width;
+                if (this.pos.x > width) this.pos.x = 0;
+                if (this.pos.y < 0) this.pos.y = height;
+                if (this.pos.y > height) this.pos.y = 0;
+                
+                // 更新顏色
+                this.hue = (this.baseHue + frameCount * 0.1) % 360;
+                
+                // 更新噪聲偏移量
+                this.offsetX += 0.01;
+                this.offsetY += 0.01;
+            }
+            
+            display() {
+                noStroke();
+                fill(this.hue, 80, this.brightness, this.alpha);
+                
+                // 根據速度繪製拉伸的形狀
+                let speed = this.vel.mag();
+                let stretchFactor = map(speed, 0, maxSpeed, 1, 2.5);
+                
+                push();
+                translate(this.pos.x, this.pos.y);
+                rotate(this.vel.heading());
+                ellipse(0, 0, this.size * stretchFactor, this.size);
+                pop();
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            background(0);
+        }
+        
+        // 觸控裝置支援
+        function touchStarted() {
+            return false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子視覺藝術化專案</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+        
+        #titleContainer {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            bottom: 15%;
+            transition: opacity 2s ease-in;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="titleContainer">
+        <h1>量子視覺藝術化</h1>
+    </div>
+
+    <script>
+        let phase = 0;  // 0: 線條, 1: 線條擾動, 2: 轉換為粒子, 3: 量子粒子系統
+        let lines = [];
+        let lineCount = 1;
+        let perturbTime = 0;
+        let transitionProgress = 0;
+        let particles = [];
+        let particleCount = 250;
+        let titleShown = false;
+        let splitTime = 0; // 用於控制分裂時間
+        let maxLines = 15; // 最大線條數量
+        let splitInterval = 0.5; // 分裂間隔時間
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            // 初始化一條線
+            lines.push({
+                y: height / 2,
+                points: [],
+                color: color(255, 255, 255, 200) // 初始線為白色
+            });
+            
+            // 為每條線創建點
+            let pointCount = 100;
+            for (let j = 0; j < pointCount; j++) {
+                lines[0].points.push({
+                    x: (width / (pointCount - 1)) * j,
+                    y: height / 2,
+                    targetY: height / 2,
+                    velocity: 0
+                });
+            }
+
+            
+            // 初始化粒子 (但在第三階段才顯示)
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: random(width),
+                    y: random(height),
+                    size: random(2, 8),
+                    speedX: random(-1, 1),
+                    speedY: random(-1, 1),
+                    color: color(random(100, 255), random(100, 255), random(200, 255), 200),
+                    angle: random(TWO_PI)
+                });
+            }
+            
+            // 計時器：開始線條擾動
+            setTimeout(() => {
+                phase = 1;
+            }, 1000 );
+        }
+        
+        function draw() {
+            background(0, 20);
+            
+            if (phase === 0) {
+                // 顯示單條線
+                splitTime += 0.05;
+                
+                // 繪製現有線條
+                for (let line of lines) {
+                    stroke(line.color);
+                    strokeWeight(2);
+                    noFill();
+                    
+                    beginShape();
+                    for (let point of line.points) {
+                        vertex(point.x, point.y);
+                    }
+                    endShape();
+                }
+                
+                // 判斷是否應該分裂線條
+                if (splitTime >= splitInterval && lines.length < maxLines) {
+                    splitTime = 0; // 重置計時器
+                    
+                    // 找出最靠近中心的線
+                    let centerLine = null;
+                    let minDistance = Infinity;
+                    for (let i = 0; i < lines.length; i++) {
+                        let distance = abs(lines[i].y - height/2);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            centerLine = i;
+                        }
+                    }
+                    
+                    // 複製該線並向上下分裂
+                    if (centerLine !== null) {
+                        let originalY = lines[centerLine].y;
+                        let spacing = 30; // 分裂距離
+                        
+                        // 向上分裂
+                        let upperLine = {
+                            y: originalY - spacing*lines.length,
+                            points: [],
+                            color: color(random(100, 255), random(100, 255), random(200, 255), 200)
+                        };
+                        
+                        // 向下分裂
+                        let lowerLine = {
+                            y: originalY + spacing*lines.length,
+                            points: [],
+                            color: color(random(100, 255), random(100, 255), random(200, 255), 200)
+                        };
+                        
+                        // 為新線創建點
+                        let pointCount = lines[centerLine].points.length;
+                        for (let j = 0; j < pointCount; j++) {
+                            upperLine.points.push({
+                                x: lines[centerLine].points[j].x,
+                                y: originalY - spacing,
+                                targetY: originalY - spacing,
+                                velocity: 0
+                            });
+                            
+                            lowerLine.points.push({
+                                x: lines[centerLine].points[j].x,
+                                y: originalY + spacing,
+                                targetY: originalY + spacing,
+                                velocity: 0
+                            });
+                        }
+                        
+                        // 加入新線
+                        lines.push(upperLine);
+                        lines.push(lowerLine);
+                    }
+                }
+                
+                // 當線條數量達到最大，切換到擾動階段
+                if (lines.length >= maxLines) {
+                    phase = 1;
+                }
+            }
+
+            else if (phase === 1) {
+                // 線條擾動階段
+                perturbTime += 0.2;
+                
+                for (let line of lines) {
+                    for (let point of line.points) {
+                        // 逐漸增加擾動
+                        let perturbStrength = map(perturbTime, 0, 3, 0, 20);
+                        let noiseVal = noise(point.x * 0.01, line.y * 0.01, perturbTime);
+                        let targetOffset = map(noiseVal, 0, 1, -perturbStrength, perturbStrength);
+                        point.targetY = line.y + targetOffset;
+                        
+                        // 應用物理模擬
+                        let force = (point.targetY - point.y) * 0.1;
+                        point.velocity = point.velocity * 0.9 + force;
+                        point.y += point.velocity;
+                    }
+                    
+                    // 繪製線條
+                    stroke(line.color);
+                    strokeWeight(2);
+                    noFill();
+                    
+                    beginShape();
+                    for (let point of line.points) {
+                        vertex(point.x, point.y);
+                    }
+                    endShape();
+                }
+                
+                // 擾動階段結束，切換到轉換階段
+                if (perturbTime >= 20) {
+                    phase = 2;
+                    
+                    // 為每個粒子找一個線上的起始點
+                    let linePoints = [];
+                    for (let line of lines) {
+                        for (let point of line.points) {
+                            linePoints.push({x: point.x, y: point.y, color: line.color});
+                        }
+                    }
+                    
+                    // 給每個粒子分配一個線上的起始點
+                    for (let i = 0; i < particles.length; i++) {
+                        if (linePoints.length > 0) {
+                            let randomIndex = floor(random(linePoints.length));
+                            let startPoint = linePoints[randomIndex];
+                            
+                            particles[i].x = startPoint.x;
+                            particles[i].y = startPoint.y;
+                            particles[i].startX = startPoint.x;
+                            particles[i].startY = startPoint.y;
+                            particles[i].color = startPoint.color;
+                            
+                            // 設定目標位置 (圓形分布)
+                            let angle = random(TWO_PI);
+                            let radius = min(width, height) * 0.3 * sqrt(random(1));
+                            particles[i].targetX = width/2 + cos(angle) * radius;
+                            particles[i].targetY = height/2 + sin(angle) * radius;
+                            
+                            // 移除已使用的點，避免粒子堆疊
+                            linePoints.splice(randomIndex, 1);
+                        }
+                    }
+                }
+            }
+            else if (phase === 2) {
+                // 從線條轉變為粒子
+                transitionProgress += 0.01;
+                
+                // 繪製轉變中的粒子
+                noStroke();
+                for (let p of particles) {
+                    // 計算當前位置 (線性插值)
+                    p.x = lerp(p.startX, p.targetX, transitionProgress);
+                    p.y = lerp(p.startY, p.targetY, transitionProgress);
+                    
+                    // 粒子大小隨轉變過程增加
+                    let currentSize = map(transitionProgress, 0, 1, 1, p.size);
+                    
+                    // 繪製粒子
+                    fill(p.color);
+                    ellipse(p.x, p.y, currentSize, currentSize);
+                }
+                
+                // 如果線還可見，繪製逐漸消失的線
+                if (transitionProgress < 0.6) {
+                    let lineAlpha = map(transitionProgress, 0, 0.6, 200, 0);
+                    
+                    for (let line of lines) {
+                        stroke(red(line.color), green(line.color), blue(line.color), lineAlpha);
+                        strokeWeight(2);
+                        noFill();
+                        
+                        beginShape();
+                        for (let point of line.points) {
+                            vertex(point.x, point.y);
+                        }
+                        endShape();
+                    }
+                }
+                
+                // 轉換完成，切換到粒子系統
+                if (transitionProgress >= 1) {
+                    phase = 3;
+                    
+                    // 顯示標題
+                    setTimeout(() => {
+                        document.getElementById("titleContainer").style.opacity = "1";
+                        titleShown = true;
+                    }, 500);
+                }
+            }
+            else if (phase === 3) {
+                // 量子粒子系統動畫
+                let centerX = width/2;
+                let centerY = height/2;
+                let radius = min(width, height) * 0.3;
+                
+                // 繪製中心圓環
+                stroke(100, 150, 255, 100);
+                strokeWeight(2);
+                noFill();
+                ellipse(centerX, centerY, radius * 2, radius * 2);
+                noStroke();
+                
+                // 更新並繪製所有粒子
+                for (let p of particles) {
+                    // 量子行為：每個粒子有一定機率改變方向
+                    if (random() < 0.03) {
+                        p.angle = random(TWO_PI);
+                    }
+                    
+                    // 計算粒子與中心的距離
+                    let dx = p.x - centerX;
+                    let dy = p.y - centerY;
+                    let distance = sqrt(dx*dx + dy*dy);
+                    
+                    // 量子約束：粒子會受到圓形邊界的影響
+                    let force = 0;
+                    if (distance > radius * 0.9) {
+                        // 靠近邊界時，有一個向中心的力
+                        force = map(distance, radius * 0.9, radius * 1.2, 0, 0.03);
+                        p.angle = atan2(centerY - p.y, centerX - p.x);
+                    }
+                    
+                    // 更新粒子位置
+                    p.x += cos(p.angle) * p.speedX + cos(atan2(centerY - p.y, centerX - p.x)) * force * 3;
+                    p.y += sin(p.angle) * p.speedY + sin(atan2(centerY - p.y, centerX - p.x)) * force * 3;
+                    
+                    // 繪製粒子
+                    fill(p.color);
+                    ellipse(p.x, p.y, p.size, p.size);
+                    
+                    // 繪製量子連線：連接相近的粒子
+                    for (let other of particles) {
+                        if (p !== other) {
+                            let d = p5.Vector.dist(createVector(p.x, p.y), createVector(other.x, other.y));
+                            if (d < 50) {
+                                stroke(red(p.color), green(p.color), blue(p.color), 100 * (1 - d/50));
+                                line(p.x, p.y, other.x, other.y);
+                                noStroke();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
