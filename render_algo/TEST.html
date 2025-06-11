@@ -167,7 +167,27 @@ let themes = [
 let features = {}
 let colors
 let defaultSize = 1080
-
+// 控制參數
+let controlParams = {
+    particleCount: 1000,
+    particleSize: 40,
+    specialColorProb: 38,
+    redValue: 0,
+    greenValue: 20,
+    blueValue: 90,
+    colorNoise: 30,
+    velocityDecay: 0.9675,
+    rotationSpeed: 0.002,
+    shadowOffsetX: 3.2,
+    shadowOffsetY: 3.2,
+    defaultRed: 255,
+    defaultGreen: 255,
+    defaultBlue: 255,
+    starPoints: 5,
+    starAmplitude: 0.1,
+    minRadius: 0.1,
+    maxRadius: 0.35
+};
 //001427
 //p5.js shader basic structure ref from https://www.openprocessing.org/sketch/920144
 
@@ -441,10 +461,10 @@ class Particle{
 		g.pop()
 	}
 	update(){
-		this.p.add(this.v)
-		this.v.add(this.a)		
-		this.r*=this.shrinkRatio
-		this.alive = this.r>0.1
+		this.p.add(this.v);
+		this.v.add(this.a);		
+		this.r *= controlParams.velocityDecay; // 使用控制的速度衰減
+		this.alive = this.r > 0.1;
 		if (random()<0.25 && frameCount % 15==0 && this.randomId%5==0){
 			this.color =random(colors)
 		}
@@ -467,14 +487,14 @@ class Particle{
 // 		}
 		
 		wormholes.forEach(w=>{
-			let ang = atan2(this.p.y-w.p.y,this.p.x-w.p.x)
+			let ang = atan2(this.p.y - height/2, this.p.x - width/2);
 			let dd = dist(this.p.x,this.p.y,w.p.x,w.p.y)
 			let ratio = map(dd,0,w.r, 1,0,true)
 			let force = w.intensity*ratio*ratio
 			
 			//rotate center
-			this.v.x += w.rotate* force* cos(ang+PI/2) + w.attract*  force* cos(ang);
-			this.v.y += w.rotate*  force*  sin(ang+PI/2)+ w.attract*  force* sin(ang);
+			this.v.x += cos(ang + PI/2) * controlParams.rotationSpeed;
+			this.v.y += sin(ang + PI/2) * controlParams.rotationSpeed;
 		})
 		
 
@@ -614,8 +634,8 @@ function setup() {
 	
 	let minPairId = 0
 	let maxPairId = random([5,6,7])
-	let span = spanOptions[pairId]
-	let maxSize = maxSizeOptions[pairId]
+	let span = map(controlParams.particleSize, 1, 100, 8, 68);
+	let maxSize = map(controlParams.particleSize, 1, 100, 160, 900);
 	let pairNoiseScale = random([10,20,100,200])
 
 	let ignorePossibility = random([0.05,0.3])
@@ -626,24 +646,17 @@ function setup() {
 	
 	// console.log(span,maxSize)
 	//noprotect
-	for(let x=0;x<=width;x+=span){
-		if (noise(x/2)<ignorePossibility) continue
-		//noprotect
-		for(let y=0;y<=height;y+=span){
-			// if (noise(x,y)<ignorePossibility) continue
-			if (noise(x/gapScale,y/gapScale)<=gapRatio) continue
-			particles.push(new Particle({
-				p: createVector(x,
-												y),
-				r: noise(x,y)*maxSize*random(1),
-				color: random(colors)
-			}))
-			
-			let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
-			span = spanOptions[pairId]
-			maxSize = maxSizeOptions[pairId]
-			
-		}
+	for(let x = 0; x <= width; x += span) {
+    	for(let y = 0; y <= height; y += span) {
+        	if (particles.length >= controlParams.particleCount) break;
+        
+        	particles.push(new Particle({
+        	    p: createVector(x, y),
+         	   r: noise(x, y) * maxSize * random(1),
+        	    color: getControlledColor() // 使用控制的顏色
+        	}));
+    	}
+   		if (particles.length >= controlParams.particleCount) break;
 	}
 	
 	// particles.sort((a,b)=>random()<0.5)
@@ -666,6 +679,7 @@ function setup() {
 		// overlayGraphics.pop()
 		// originalGraphics.ellipse(w.p.x,w.p.y,50,50)	
 	}
+	setupControlListeners();
 }
 
 
@@ -784,6 +798,60 @@ function draw() {
 		image(overlayGraphics,0,0)
 		pop()
 	}
+}
+function getControlledColor() {
+    if (random(100) < controlParams.specialColorProb) {
+        // 使用特殊顏色（紅綠藍值）
+        return color(
+            controlParams.redValue + random(-controlParams.colorNoise, controlParams.colorNoise),
+            controlParams.greenValue + random(-controlParams.colorNoise, controlParams.colorNoise),
+            controlParams.blueValue + random(-controlParams.colorNoise, controlParams.colorNoise)
+        );
+    } else {
+        // 使用預設顏色
+        return color(
+            controlParams.defaultRed,
+            controlParams.defaultGreen,
+            controlParams.defaultBlue
+        );
+    }
+}
+function setupControlListeners() {
+    // 粒子數量
+    document.getElementById('particleCount').addEventListener('input', (e) => {
+        controlParams.particleCount = parseInt(e.target.value);
+        document.getElementById('particleCountValue').textContent = e.target.value;
+    });
+    
+    // 粒子大小
+    document.getElementById('particleSize').addEventListener('input', (e) => {
+        controlParams.particleSize = parseInt(e.target.value);
+        document.getElementById('particleSizeValue').textContent = `5-${e.target.value}`;
+    });
+    
+    // 特殊顏色機率
+    document.getElementById('specialColor').addEventListener('input', (e) => {
+        controlParams.specialColorProb = parseInt(e.target.value);
+        document.getElementById('specialColorValue').textContent = e.target.value + '%';
+    });
+    
+    // 顏色控制
+    document.getElementById('redColor').addEventListener('input', (e) => {
+        controlParams.redValue = parseInt(e.target.value);
+        document.getElementById('redValue').textContent = e.target.value;
+    });
+    
+    document.getElementById('greenColor').addEventListener('input', (e) => {
+        controlParams.greenValue = parseInt(e.target.value);
+        document.getElementById('greenValue').textContent = e.target.value;
+    });
+    
+    document.getElementById('blueColor').addEventListener('input', (e) => {
+        controlParams.blueValue = parseInt(e.target.value);
+        document.getElementById('blueValue').textContent = e.target.value;
+    });
+    
+    // 其他參數類似添加...
 }
 const frag_functions_default = `
   #define PI 3.141592653589793
