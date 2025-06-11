@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子視覺藝術化專案</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            display: flex;  /* 使用 flex 布局 */
+        }
+        
+        #controlPanel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 1000;
+            width: 300px;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+        }
+
+        canvas {
+			background: transparent !important;
+            position: fixed !important;
+            left: 340px !important;  /* 控制面板寬度 + 間距 */
+            top: 0 !important;
+            width: calc(100vw - 340px) !important;
+            height: 100vh !important;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .control-group input {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group .value {
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="controlPanel">
+        <div class="control-group">
+            <label>粒子數量: <span class="value" id="particleCountValue">1000</span></label>
+            <input type="range" id="particleCount" min="50" max="1200" value="1000" step="50">
+        </div>
+        <div class="control-group">
+            <label>粒子大小: <span class="value" id="particleSizeValue">5-40</span></label>
+            <input type="range" id="particleSize" min="1" max="100" value="40" step="1">
+        </div>
+        <div class="control-group">
+            <label>特殊顏色機率: <span class="value" id="specialColorValue">38%</span></label>
+            <input type="range" id="specialColor" min="0" max="100" value="38" step="1">
+        </div>
+        <div class="control-group">
+            <label>紅色值: <span class="value" id="redValue">0</span></label>
+            <input type="range" id="redColor" min="0" max="255" value="0" step="1">
+        </div>
+        <div class="control-group">
+            <label>綠色值: <span class="value" id="greenValue">20</span></label>
+            <input type="range" id="greenColor" min="0" max="255" value="20" step="1">
+        </div>
+        <div class="control-group">
+            <label>藍色值: <span class="value" id="blueValue">90</span></label>
+            <input type="range" id="blueColor" min="0" max="255" value="90" step="1">
+        </div>
+        <div class="control-group">
+            <label>顏色變化強度: <span class="value" id="colorNoiseValue">30</span></label>
+            <input type="range" id="colorNoise" min="0" max="100" value="30" step="1">
+        </div>
+        <div class="control-group">
+            <label>速度衰減: <span class="value" id="velocityDecayValue">0.9675</span></label>
+            <input type="range" id="velocityDecay" min="0.9" max="0.99" value="0.9675" step="0.001">
+        </div>
+        <div class="control-group">
+            <label>旋轉速度: <span class="value" id="rotationSpeedValue">0.002</span></label>
+            <input type="range" id="rotationSpeed" min="-0.01" max="0.01" value="0.002" step="0.001">
+        </div>
+        <div class="control-group">
+            <label>陰影偏移 X: <span class="value" id="shadowOffsetXValue">3.2</span></label>
+            <input type="range" id="shadowOffsetX" min="0" max="10" value="3.2" step="0.1">
+        </div>
+        <div class="control-group">
+            <label>陰影偏移 Y: <span class="value" id="shadowOffsetYValue">3.2</span></label>
+            <input type="range" id="shadowOffsetY" min="0" max="10" value="3.2" step="0.1">
+        </div>
+        <div class="control-group">
+            <label>預設粒子顏色</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">R: <span class="value" id="defaultRedValue">255</span></label>
+                    <input type="range" id="defaultRed" min="0" max="255" value="255" step="1">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">G: <span class="value" id="defaultGreenValue">255</span></label>
+                    <input type="range" id="defaultGreen" min="0" max="255" value="255" step="1">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">B: <span class="value" id="defaultBlueValue">255</span></label>
+                    <input type="range" id="defaultBlue" min="0" max="255" value="255" step="1">
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>星星形狀控制</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">尖角數量: <span class="value" id="starPointsValue">5</span></label>
+                    <input type="range" id="starPoints" min="3" max="12" value="5" step="1">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">波動幅度: <span class="value" id="starAmplitudeValue">0.1</span></label>
+                    <input type="range" id="starAmplitude" min="0" max="0.3" value="0.1" step="0.01">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">最小半徑: <span class="value" id="minRadiusValue">0.1</span></label>
+                    <input type="range" id="minRadius" min="0.05" max="0.2" value="0.1" step="0.01">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">最大半徑: <span class="value" id="maxRadiusValue">0.35</span></label>
+                    <input type="range" id="maxRadius" min="0.2" max="0.5" value="0.35" step="0.01">
+                </div>
+            </div>
+        </div>
+        <button id="resetButton" style="width: 100%; padding: 10px; margin-top: 10px;">重置參數</button>
+    </div>
+    <script>
+        // noprotect
+let themes = [
+	"d72638-3f88c5-f49d37-140f2d-f22b29-fe4a49-fed766-7fbb8f-009fb7-e6e6ea-fff-102a54".split("-").map(a=>"#"+a),
+	"584d3d-9f956c-cbbf7a-f4e87c-ebf38b-fed766-fff-ffa856-000-e5dede".split("-").map(a=>"#"+a)	,
+	"0e131f-38405f-59546c-8b939c-ff0035-2c0735-fff".split("-").map(a=>"#"+a),
+	
+	// "ffc854-000-ffc854-000-fff".split("-").map(a=>"#"+a),
+	// "261447-f1e3f3-c2bbf0-8fb8ed-62bfed-3590f3-fff-FF8680".split("-").map(a=>"#"+a),
+	// "07252F-7c6a0a-babd8d-ffdac6-fa9500-eb6424-FCFBF6".split("-").map(a=>"#"+a),
+	// "e6e1c6-afac96-c0bda5-cc978e-f39c6b-f96a68-ff3864-261447-3a2958-fff".split("-").map(a=>"#"+a),
+	// "0a369d-4472ca-5e7ce2-92b4f4-cfdee7-fff".split("-").map(a=>"#"+a),	
+	// "daddd8-c7d59f-b7ce63-8fb339-4b5842-fafafa-daddd8-c7d59f-b7ce63-8fb339-4b5842-fafafa-daddd8-c7d59f-b7ce63-8fb339-4b5842-fafafa-FF715B".split("-").map(a=>"#"+a)
+]
+// // "000-aaa-fff-eee".split("-").map(a=>"#"+a),
+//"fff-9fa2b2-3c7a89-2e4756-16262e-000-fff-9fa2b2-3c7a89-2e4756-16262e-000-fff".split("-").map(a=>"#"+a),
+
+let features = {}
+let colors
+let defaultSize = 1080
+
+//001427
+//p5.js shader basic structure ref from https://www.openprocessing.org/sketch/920144
+
+class Wormhole{
+	constructor (args){
+		let def = {
+			p: createVector(0,0),
+			intensity: random([-5,5]),
+			r: 500,
+			rotate: 1,
+			attract: 1
+		}
+		Object.assign(def,args)
+		Object.assign(this,def)
+	}
+	update(){
+	}
+}
+class Particle{
+	constructor(args){
+		let def = {
+			p: createVector(0,0),
+			lastP: createVector(-1,-1),
+			v: createVector(0,0),
+			a: createVector(0,0),
+			r: random(100),
+			followRotateFactor: random(features.rotateFactors),
+			color: random(colors),
+			//200 is original (x moving a lot)
+			steps: [int(random([2,3,10,20,30,50,120,150])),int(random([2,3,4]))],
+			shrinkRatio: random([ 0.995,0.99,0.99,0.98,0.95]),
+			vNoiseScale: features.vNoiseScale,
+			color2: random([255,255,random(colors)]),
+			randomId: int(random(10000)),
+			xSpeedFactor: random([6,8,10,12]),
+			ySpeedFactor: random([6,8,10,12])
+
+		}
+		Object.assign(def,args)
+		Object.assign(this,def)
+	}
+	draw(g){
+		g.push()
+			// g.blendMode(MULTIPLY)
+			let clr = color(this.color)
+// 			clr.setAlpha(500*map(this.r,200,0,0.02,0,true))
+// 			let colorVar = 30
+// 			clr.setRed(clr._getRed()+noise(this.p.x/5,this.p.y/5)*colorVar-colorVar/2)
+// 			clr.setGreen(clr._getGreen()+noise(1000,this.p.x/5,this.p.y/5)*colorVar-colorVar/2)
+// 			clr.setBlue(clr._getBlue()+noise(this.p.x/5,1000,this.p.y/5)*colorVar-colorVar/2)
+		 
+			
+// 			if (
+// 			g.stroke(clr)
+// 			g.blendMode(MULTIPLY)
+// 			if (frameCount>10) return
+// 			g.noFill()
+			g.fill(clr)
+		 
+			if (noise(this.p.x/50,this.p.y/50)<0.3 && random()<0.35 && features.style=="stroke"){
+				overlayGraphics.push()
+					overlayGraphics.noStroke()
+					overlayGraphics.fill(clr)
+					overlayGraphics.ellipse(this.p.x+random(-this.r,this.r),this.p.y+random(-this.r,this.r),random(6)*random()*random(0.5,1))
+				overlayGraphics.pop()
+			}
+			g.translate(this.p)
+		// g.noStroke()
+			if (frameCount==1 && this.randomId%5==0){
+				g.strokeWeight(2)
+				g.stroke(this.color2)
+			}
+		
+			//test stroke style
+			if (features.style=="stroke" ){
+				//mountain lines
+				if ( (this.randomId+frameCount)%5==0){
+					g.push()
+							g.blendMode(MULTIPLY)
+							clr.setAlpha(noise(this.randomId)*150)
+							g.translate(-this.p.x,-this.p.y)
+							let rr = noise(this.randomId)*5*noise(this.randomId)
+							g.stroke(clr)
+							g.strokeWeight(rr)
+							if (this.randomId%800==0){
+								clr.setAlpha(random(50,100))
+								g.stroke(clr)
+								g.strokeWeight(noise(this.randomId*500)*5)
+							} 
+							// g.noStroke()
+							// g.rect(0,0,rr,rr)
+							if (this.lastP.x!=-1){
+								// console.log(this.p,this.lastP)
+								
+								g.line(this.p.x,this.p.y,this.lastP.x,this.lastP.y)
+							}
+							this.lastP = this.p.copy()
+					g.pop()
+				}
+				if ((this.randomId+frameCount)%8==0 && this.randomId%(9 + int(50/pow(this.r/10,3)))<=1){ 
+					g.push()
+					
+						g.blendMode(MULTIPLY)
+						// g.fill(clr)
+						// g.noStroke()
+					
+					
+					
+						clr.setAlpha(random(255))
+						g.stroke(clr)
+						// if((this.randomId+frameCount)%3==0){
+						// 	g.blendMode(MULTIPLY)
+						// }
+					
+						g.strokeWeight(noise(this.p.x/40,this.p.y/40)*2.5*random(0.3,1))
+						g.rotate(noise(this.p.x/100,this.p.y/100,this.randomId)*PI*2)
+						g.rotate(noise(this.p.x/5,this.p.y/5,this.randomId)/2)
+						if (this.randomId%4==0 && brightness(clr)>50){
+							clr.setAlpha(random(8))
+							g.fill(clr)
+							clr.setAlpha(random(150))
+							g.stroke(clr)
+							if (random()<0.9){
+								g.noStroke()
+							}
+							let waterColorScale = noise(this.randomId,1000)*5+1
+							g.arc(0,0,this.r*waterColorScale,this.r*waterColorScale,0,PI)
+						}else{
+							g.line(0,this.r/2,this.r,-this.r/2)
+						}
+					
+					
+					
+					g.pop()
+				}else{
+					if ((this.randomId+frameCount)%10==0){
+// 						g.push()
+// 						clr.setAlpha(5)
+// 						g.fill(clr)
+						
+// 						g.blendMode(MULTIPLY)
+// 						g.ellipse(0,0,this.r,this.r)
+// 					g.pop()
+					}
+				}
+			}
+			if (features.style=="shape" || features.style=="stroke"){
+				if (features.style=="shape" || noise(this.p.x/52,this.p.y/52)<0.525){
+					if (frameCount%40==0){
+						clr.setAlpha(random(0,1))
+						g.fill(clr)
+						g.ellipse(0,0,this.r,this.r)
+
+					}else if ((this.randomId+frameCount)%8==0 && this.randomId%(9 + int(50/pow(this.r/10,3)))<=1){
+
+						g.noFill() 
+						clr.setAlpha(random(200,255))
+						g.stroke(clr)
+						g.strokeWeight(random(0,2)*random(0.5,1))
+						
+						if (this.randomId%88==0 && random()<0.2){
+							clr.setAlpha(random(100,200))
+							g.strokeWeight(noise(this.randomId*500)*8)
+						}
+
+						
+						g.blendMode(MULTIPLY)	
+						if (brightness(clr)>90){
+							if (random()<0.5){
+								g.blendMode(SCREEN)
+							}
+						}
+
+						if (this.randomId%2==0 && frameCount%2==0){
+							clr.setAlpha(random(0,1))
+							g.fill(clr)
+							g.noStroke()
+						}
+						if (this.randomId%10==0 || noise(this.p.x/120,this.p.y/120)<=0.3){
+							//draw a line
+							g.rotate(noise(this.p.x*5,this.p.y*5,frameCount/10)*PI*2 )
+							g.line(0,this.r,0,-this.r)
+						}else{
+							if (this.randomId% 3==0  ){
+								clr.setAlpha(random(0,3))
+								g.fill(clr)
+							}
+							//draw an ellipse
+							g.ellipse(0,0,this.r*1.1,this.r*1.1)
+						}
+					}
+				}
+			}else if (features.style=="normal"){ 
+					//fill 
+				g.ellipse(0,0,this.r,this.r)  
+				
+				
+				// if (noise(this.p.x/300,this.p.y/300)<0.3 && random()<0.02){
+				// 	overlayGraphics.push()
+				// 		overlayGraphics.noStroke()
+				// 		overlayGraphics.fill(clr)
+				// 		overlayGraphics.rect(this.p.x+random(-this.r,this.r),this.p.y+random(-this.r,this.r),20,-20,10)
+				// 	overlayGraphics.pop()
+				// }
+			}
+		
+		
+		// g.ellipse(this.r*2+10,0,3,3)
+		
+			//grass
+			if (this.randomId%30==0 && frameCount%50==0 && this.r>1){
+				
+				// g.fill(bgColor)
+				g.push()
+				g.translate(this.r+20,0)
+				g.stroke(this.color2)
+				g.translate(0,random([-this.r,this.r]))
+				g.line(0,0,0,-5)
+				g.line(0,0,-3,-5)
+				g.line(0,0,3,-5)
+				g.pop()
+			}
+	
+		let verticalLineSpan = 5
+		if (features.style=="shape") verticalLineSpan = 30
+		
+		if (features.style=="stroke") verticalLineSpan = 35
+			// vertical lines
+			if (this.randomId%verticalLineSpan==0){
+				g.fill(0)
+				g.ellipse(0,this.r+10,2,2)
+			}
+		
+			if (this.randomId%10==0){
+				
+				g.fill(bgColor)
+				g.ellipse(this.r/2,0,2,2)
+			}
+			if (this.randomId%25==0){
+				
+				g.fill(255)
+				let whiteR = (noise(this.randomId,this.p.x/40,this.p.y/40)*3)+1
+				g.ellipse(-this.r-10,this.r+10,whiteR,whiteR)
+			}
+			if (this.r>10 && (this.randomId+frameCount)%60==0 && this.randomId%4==0){
+				g.fill(this.color2)
+				g.ellipse(-this.r,4,4)
+			} 
+			if (features.style=='normal' && frameCount%50==0 && this.randomId%14==0 && random()<0.6){
+				g.push()
+				let lineSp = random([5,10,20,30,40])
+				let lineCount = random(20)
+				for(var i=0;i<random(lineCount);i++){
+					let lLan = 5
+					g.stroke(0,100)
+					g.line(-this.r-10-lLan,-i*lineSp,-this.r-10+lLan,-i*lineSp)
+				}
+				g.pop()
+			}
+			// g.ellipse(this.r+10,this.r+10,2,2)
+			if (random()<0.001 && frameCount%10==0){
+				g.stroke(0)
+				g.noFill()
+				g.ellipse(0,this.r+10,random(this.r))
+			}
+		
+
+		
+			// g.rotate(PI/4-PI/2)
+			// g.rect(0,0,-this.r*2,2)
+		g.pop()
+	}
+	update(){
+		this.p.add(this.v)
+		this.v.add(this.a)		
+		this.r*=this.shrinkRatio
+		this.alive = this.r>0.1
+		if (random()<0.25 && frameCount % 15==0 && this.randomId%5==0){
+			this.color =random(colors)
+		}
+		
+		let steplize = (n,l)=>int(n*l)/l
+		// if (this.randomId%25==0){
+			this.v.x = (steplize(noise(this.p.x/this.vNoiseScale,this.p.y/this.vNoiseScale)-0.5,this.steps[0]))*this.xSpeedFactor
+			this.v.y = (steplize(noise(this.p.y/this.vNoiseScale,this.p.x/this.vNoiseScale)-0.5,this.steps[1]))*this.ySpeedFactor
+			
+			let ang = atan2(this.p.y-height/2,this.p.x-width/2)
+			let r = dist(this.p.x,this.p.y,width/2,height/2)
+			
+			//rotate center
+			this.v.x += cos(ang+PI/2)*this.followRotateFactor;
+			this.v.y += sin(ang+PI/2)*this.followRotateFactor;
+// 		}else{
+// 			this.v.x = (steplize(noise(this.p.x/50,this.p.y/50)-0.5,this.steps[0]))*this.xSpeedFactor
+// 			this.v.y = (steplize(noise(this.p.y/50,this.p.x/50)-0.5,this.steps[1]))*this.ySpeedFactor
+		
+// 		}
+		
+		wormholes.forEach(w=>{
+			let ang = atan2(this.p.y-w.p.y,this.p.x-w.p.x)
+			let dd = dist(this.p.x,this.p.y,w.p.x,w.p.y)
+			let ratio = map(dd,0,w.r, 1,0,true)
+			let force = w.intensity*ratio*ratio
+			
+			//rotate center
+			this.v.x += w.rotate* force* cos(ang+PI/2) + w.attract*  force* cos(ang);
+			this.v.y += w.rotate*  force*  sin(ang+PI/2)+ w.attract*  force* sin(ang);
+		})
+		
+
+		
+		//test
+		
+// 		if (noise(this.p.x/120,this.p.y/120)<0.2){
+			
+// 			// originalGraphics.fill('red')
+// 			// originalGraphics.ellipse(this.p.x,this.p.y,5,5)
+// 			this.v.x+=sin(this.p.y/50)*50
+// 			this.v.y+=cos(this.p.x/50)*50
+// 		}
+		
+				
+		//quantize angle
+		if (noise(this.p.x/60,this.p.y/60)<0.2){
+			let ang = atan2(this.v.x,this.v.y) 
+			let amp = this.v.mag()
+			let angStepCount = 8
+			let newAng = int(ang/2/PI*angStepCount)/angStepCount*2*PI
+			this.v.x = amp*cos(newAng)
+			this.v.y = amp*sin(newAng)
+			// originalGraphics.fill('red')
+			// originalGraphics.ellipse(this.p.x,this.p.y,5,5)
+			
+		}
+		
+		
+		// this.v.add(this.p.copy().sub(createVector(width/2,height/2)).mult(-0.002))
+	}
+	
+}
+
+let theShader,theShaderTexture;
+let webGLCanvas
+let originalGraphics
+let overlayGraphics
+let particles = []
+let wormholes = []
+let overallTexture
+let bgColor
+let sortedColors = []
+function preload(){
+	// randomSeed(3390)
+	// noiseSeed(20)
+	colors = random(themes)
+	
+	sortedColors = colors.sort((a,b)=>brightness(color(b))-brightness(color(a)))
+	
+	
+	theShader = new p5.Shader(this.renderer,vert,frag)
+	theShaderTexture = new p5.Shader(this.renderer,vert,frag_texture)
+	// overallTexture = loadImage("canvas-light.jpeg") 
+		
+	
+	features.style='normal'
+	// features.style=random()<1?'stroke':'normal'
+	// features.style=random()<0.2?'shape':features.style
+	features.hasBgBorder = random()<0.5;
+	features.rotateFactors = random([
+		[0],
+		[0],
+		[0],
+		[0],
+		[0,0.05],
+		[0,-0.05],
+		[0.05,0,0,0,0,0,0,-0.05]
+		
+	])
+	features.vNoiseScale = random([40,50,75,100,120])
+	features.hasGrid = false
+	features.wormholeCount = random([1,2,3,4,5])
+}
+
+function setup() {
+	
+	pixelDensity(4)
+	createCanvas(1400,1400);
+	
+	//prepare texture
+	overallTexture = createGraphics(width,height,WEBGL)
+	overallTexture.shader(theShaderTexture)
+	theShaderTexture.setUniform('u_resolution',[width,height])
+	// theShaderTexture.setUniform('u_canvas_tex',overallTexture)
+	overallTexture.rect(-width/2,-height/2,width,height)
+	
+	
+	webGLCanvas = createGraphics(width,height,WEBGL)
+	originalGraphics = createGraphics(width,height)
+	overlayGraphics = createGraphics(width,height)
+	
+	webGLCanvas.noStroke()
+	overlayGraphics.noStroke()
+	originalGraphics.noStroke()
+	
+	let rx = random([-0.1,-0.05,0,0,0.05,0.1])*width;
+	let	ry = random([-0.1,-0.05,0,0,0.05,0.1])*height
+	let ra = random([-0.2,-0.1,0,0,0.1,0.2])
+	
+	for(let g of [originalGraphics,overlayGraphics]){
+		// console.log(g)
+		g.translate(rx,ry)
+		g.translate(width/2,height/2)
+		// g.rotate(ra)
+		// if (!features.style=="normal"){
+			g.scale(random([1,1.2,1.5,2,3]))
+		// }
+		g.translate(-width/2,-height/2)
+	}
+
+	
+	background(100)
+	
+	originalGraphics.noStroke()
+	
+	bgColor=color(random(colors))
+	
+	if (features.style=="normal"){
+		bgColor = color(random(sortedColors))
+	}else{
+		bgColor = color(random(sortedColors.slice(0,2).concat(['#fff']) ))
+	}
+	if (features.style=="stroke") bgColor=color(255)
+	if (features.style=="shape") bgColor=color(255)
+	
+	// bgColor = color('#f9f9f7')
+	// bgColor=color(255)
+	
+
+	// originalGraphics.background(bgColor); 
+	
+	let pairId = int(random(6))
+
+	let spanOptions =[8,10,12,20,32,44,60,68]
+	let maxSizeOptions = [160,200,300,400,500,600,840,900]
+	
+	let minPairId = 0
+	let maxPairId = random([5,6,7])
+	let span = spanOptions[pairId]
+	let maxSize = maxSizeOptions[pairId]
+	let pairNoiseScale = random([10,20,100,200])
+
+	let ignorePossibility = random([0.05,0.3])
+	let gapScale = random([100,150,200,250])
+	let gapRatio = random([0.3,0.35,0.4,0.45,0.5])
+	let panScale = random([0,1,2,5,10,15,20,25])
+	let panRatio = random([0,0,random([0,5,10,15])])
+	
+	// console.log(span,maxSize)
+	//noprotect
+	for(let x=0;x<=width;x+=span){
+		if (noise(x/2)<ignorePossibility) continue
+		//noprotect
+		for(let y=0;y<=height;y+=span){
+			// if (noise(x,y)<ignorePossibility) continue
+			if (noise(x/gapScale,y/gapScale)<=gapRatio) continue
+			particles.push(new Particle({
+				p: createVector(x,
+												y),
+				r: noise(x,y)*maxSize*random(1),
+				color: random(colors)
+			}))
+			
+			let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
+			span = spanOptions[pairId]
+			maxSize = maxSizeOptions[pairId]
+			
+		}
+	}
+	
+	// particles.sort((a,b)=>random()<0.5)
+	
+	for(let i=0;i<features.wormholeCount;i++){
+		let w = new Wormhole({
+			p: createVector(random(-width*0.2,width*1.2),random(-height*0.2,height*1.2)),
+			r: random(100,600),
+			intensity: random([-1,1])/10,
+			rotate: random([-1,1]),
+			attract: random([-1,1])
+		})
+		wormholes.push(w)
+		// overlayGraphics.push()
+		// overlayGraphics.stroke('blue')
+		// overlayGraphics.strokeWeight(5)
+		// overlayGraphics.translate(w.p.x,w.p.y)
+		// overlayGraphics.line(-10,-10,10,10)
+		// overlayGraphics.line(-10,10,10,-10)
+		// overlayGraphics.pop()
+		// originalGraphics.ellipse(w.p.x,w.p.y,50,50)	
+	}
+}
+
+
+function draw() {
+	 
+
+	
+	webGLCanvas.shader(theShader)
+	theShader.setUniform('u_resolution',[width,height])
+	theShader.setUniform('u_time',millis()/1000)
+	theShader.setUniform('u_mouse',[mouseX/width,mouseY/height])
+	theShader.setUniform('u_tex',originalGraphics)
+	theShader.setUniform('u_bgColor',[bgColor._getRed()/255.,bgColor._getGreen()/255.,bgColor._getBlue()/255.])
+	theShader.setUniform('u_canvas_tex',overallTexture)
+	
+	webGLCanvas.clear()
+
+	
+	webGLCanvas.background(bgColor)
+	background(100)
+	fill(0)
+	rect(0,0,width*2,height*2)
+	
+	webGLCanvas.rect(-width/2,-height/2,width,height)
+	// webGLCanvas.noStroke()
+	// webGLCanvas.push()
+	// webGLCanvas.rotateY(frameCount/300)
+	// webGLCanvas.sphere(500-frameCount/2)
+	// webGLCanvas.pop()
+	
+	particles.forEach(p=>{
+		p.update() 
+		p.draw(originalGraphics)
+		
+		// if (random()<0.005 && frameCount<5000){
+		// 	let p1 = random(particles), p2 = random(particles)
+		// 	overlayGraphics.push()
+		// 	overlayGraphics.blendMode(MULTIPLY)
+		// 	overlayGraphics.stroke(0,2)
+		// 	overlayGraphics.strokeWeight(0.4)
+		// 	overlayGraphics.line(p1.p.x,p1.p.y,p2.p.x,p2.p.y)
+		// 	overlayGraphics.pop()
+		// }
+		
+	})
+	particles = particles.filter(p=>p.alive)
+
+	originalGraphics.noStroke()
+	// originalGraphics.fill(255)
+	// originalGraphics.noStroke()
+	// originalGraphics.ellipse(mouseX, mouseY, 10, 10);
+	
+	
+	fill(bgColor); 
+	rect(0,0,width,height)
+	
+	push()
+	let gridSpan = 40
+	if (features.hasGrid){
+		blendMode(MULTIPLY)
+		//test grid
+		for(let x=0;x<width;x+=gridSpan){
+			stroke(0,20)
+			line(x,0,x,height)
+		}
+		for(let y=0;y<height;y+=gridSpan){
+			stroke(0,20)
+			line(0,y,width,y)
+		}
+	}
+	blendMode(BLEND)
+	if (features.style=='normal'){
+		image(webGLCanvas,0,0)
+		
+		push()
+		// blendMode(MULTIPLY)
+		
+		// image(webGLCanvas,0,0)
+		image(overlayGraphics,0,0)
+		pop()
+	}
+	pop()
+	// pop()
+// 	push()
+// 		blendMode(MULTIPLY)
+	
+		// image(originalGraphics,0,0)
+// 	pop()
+	// push()
+	// 	// blendMode(ADD)
+	// 	stroke(bgColor)
+	// 	noFill()
+	// 	strokeWeight(40)
+	// 	rect(0,0,width,height)
+	// pop()
+	
+	// push()
+	// 		blendMode(MULTIPLY)
+	// 		noStroke()
+	// 		image(overallTexture,0,0)
+	// 		// blendMode(SCREEN)
+	// 		// image(overallTexture,0,0,1920,1080)
+	// 		// image(overallTexture,0,0,height/1080*1920 ,height)
+	// pop()
+	// for(var i=0;i<height;i+=200){
+	// 	stroke(bgColor)
+	// 	strokeWeight(15)
+	// 	line(0,i,width,i)
+	// }
+	
+	if (features.style!='normal'){
+		push()
+		blendMode(MULTIPLY)
+		
+		image(webGLCanvas,0,0)
+		image(overlayGraphics,0,0)
+		pop()
+	}
+}
+const frag_functions_default = `
+  #define PI 3.141592653589793
+  #define TAU 6.283185307179586
+	
+	float rand(vec2 c){
+		return fract(sin(dot(c.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	}
+
+	mat2 rotate2d(float _angle){
+    return mat2(cos(_angle),-sin(_angle),
+                sin(_angle),cos(_angle));
+	}
+
+	mat2 scale2d(vec2 _scale){
+			return mat2(_scale.x,0.0,
+									0.0,_scale.y);
+	}
+
+	vec2 tile (vec2 _st, float _zoom) {
+			_st *= _zoom;
+			return fract(_st);
+	}
+
+	//	Classic Perlin 3D Noise 
+	//	by Stefan Gustavson
+
+	vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+	vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+	vec3 fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
+
+	float cnoise(vec3 P){
+		vec3 Pi0 = floor(P); // Integer part for indexing
+		vec3 Pi1 = Pi0 + vec3(1.0); // Integer part + 1
+		Pi0 = mod(Pi0, 289.0);
+		Pi1 = mod(Pi1, 289.0);
+		vec3 Pf0 = fract(P); // Fractional part for interpolation
+		vec3 Pf1 = Pf0 - vec3(1.0); // Fractional part - 1.0
+		vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
+		vec4 iy = vec4(Pi0.yy, Pi1.yy);
+		vec4 iz0 = Pi0.zzzz;
+		vec4 iz1 = Pi1.zzzz;
+
+		vec4 ixy = permute(permute(ix) + iy);
+		vec4 ixy0 = permute(ixy + iz0);
+		vec4 ixy1 = permute(ixy + iz1);
+
+		vec4 gx0 = ixy0 / 7.0;
+		vec4 gy0 = fract(floor(gx0) / 7.0) - 0.5;
+		gx0 = fract(gx0);
+		vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+		vec4 sz0 = step(gz0, vec4(0.0));
+		gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+		gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+
+		vec4 gx1 = ixy1 / 7.0;
+		vec4 gy1 = fract(floor(gx1) / 7.0) - 0.5;
+		gx1 = fract(gx1);
+		vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+		vec4 sz1 = step(gz1, vec4(0.0));
+		gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+		gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+
+		vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
+		vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+		vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
+		vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+		vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
+		vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+		vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
+		vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+
+		vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+		g000 *= norm0.x;
+		g010 *= norm0.y;
+		g100 *= norm0.z;
+		g110 *= norm0.w;
+		vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+		g001 *= norm1.x;
+		g011 *= norm1.y;
+		g101 *= norm1.z;
+		g111 *= norm1.w;
+
+		float n000 = dot(g000, Pf0);
+		float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
+		float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
+		float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
+		float n001 = dot(g001, vec3(Pf0.xy, Pf1.z));
+		float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+		float n011 = dot(g011, vec3(Pf0.x, Pf1.yz));
+		float n111 = dot(g111, Pf1);
+
+		vec3 fade_xyz = fade(Pf0);
+		vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+		vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+		float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+		return 2.2 * n_xyz;
+	}
+	
+	
+float noise(vec2 p, float freq ){
+	float unit = 1./freq;
+	vec2 ij = floor(p/unit);
+	vec2 xy = mod(p,unit)/unit;
+	//xy = 3.*xy*xy-2.*xy*xy*xy;
+	xy = .5*(1.-cos(PI*xy));
+	float a = rand((ij+vec2(0.,0.)));
+	float b = rand((ij+vec2(1.,0.)));
+	float c = rand((ij+vec2(0.,1.)));
+	float d = rand((ij+vec2(1.,1.)));
+	float x1 = mix(a, b, xy.x);
+	float x2 = mix(c, d, xy.x);
+	return mix(x1, x2, xy.y);
+}
+
+	
+	float pNoise(vec2 p, int res){
+		// p+=u_noise_pan;
+		float persistance = .5;
+		float n = 0.;
+		float normK = 0.;
+		float f = 4.;
+		float amp = 1.;
+		int iCount = 0;
+		//noprotect
+		for (int i = 0; i<50; i++){
+			n+=amp*noise(p, f);
+			f*=2.;
+			normK+=amp;
+			amp*=persistance;
+			if (iCount == res) break;
+			iCount++;
+		}
+		float nf = n/normK;
+		return nf*nf*nf*nf;
+	}
+
+	vec2 random2( vec2 p ) {
+			return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
+	}
+
+`
+const frag = `
+	precision highp float;
+
+	uniform vec2 u_resolution;
+	uniform vec2 u_mouse;
+	uniform float u_time;
+	uniform vec3 u_lightDir;
+	uniform vec3 u_col;
+	uniform vec3 u_bgColor;
+	uniform mat3 uNormalMatrix;
+	uniform float u_pixelDensity;
+	uniform sampler2D u_tex;
+	uniform sampler2D u_canvas_tex; 
+
+	//attributes, in
+	varying vec4 var_centerGlPosition;
+	varying vec3 var_vertNormal;
+	varying vec2 var_vertTexCoord;
+
+	${frag_functions_default}
+
+	void main(){
+		vec2 st = var_vertTexCoord.xy /u_resolution.xy*u_resolution.y;
+		st.x*=u_resolution.x/u_resolution.y;
+		vec2 stBorder =st;
+		
+		stBorder.x+=cnoise(vec3(st*1000.,100.))/500.;
+		stBorder.y+=cnoise(vec3(st*1000.,1000.))/500.; 
+		
+		stBorder.x+=cnoise(vec3(st*100.,100.))/500.;
+		stBorder.y+=cnoise(vec3(st*100.,1000.))/500.; 
+
+
+
+	
+		vec3 canvasOffset = texture2D(u_canvas_tex,st* vec2(u_resolution.x/u_resolution.y,1.)).rgb;
+		st.x+=0.35/255.- canvasOffset.r/255.*3. ;
+		st.y+=0.35/255.- canvasOffset.g/255.*3.  ;
+		
+		float distortFactor =  0.8;
+		st.x+=  cnoise(vec3(st*2.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor  ;
+		st.y+= cnoise(vec3(st*20.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor 
+					+ cnoise(vec3(st/2.,${(Math.random()*1000).toFixed(4)}))/(100.)*distortFactor;
+		
+		// st.x+=cnoise(vec3(st*50.,100.))/300.  ;
+		// st.y+=cnoise(vec3(st*100.,1000.))/300.;
+		
+		vec4 texColor0 = texture2D(u_tex,st);
+		
+		//offset color Blocks
+		float offsetColor = 1./300.;
+		stBorder.x-= texColor0.r*offsetColor;
+		stBorder.y-=texColor0.g*offsetColor+ texColor0.b*offsetColor;
+		
+		vec4 texColor1 = texture2D(u_tex,st);
+		 
+		
+		vec2 st2 = st;
+		//brush feeling  
+		float brushFactor = 400.;
+		st2.x+=cnoise(vec3(st*1000.,100.))/brushFactor;
+		st2.y+=cnoise(vec3(st*1000.,1000.))/brushFactor; 
+ 
+		vec4 texColor2 = texture2D(u_tex,st2);
+		
+		float d = distance(vec2(0.5) ,st);  
+		// texColor*=1.-d+0.3;
+		// gl_FragColor= vec4(color,1.0)+texColor2; 
+		
+		float borderWidth = 20.;
+		bool isBorder = stBorder.x*u_resolution.x<borderWidth
+		|| (1.-stBorder.x)*u_resolution.x<borderWidth 
+		|| stBorder.y*u_resolution.y<borderWidth 
+		|| (1.-stBorder.y)*u_resolution.y<borderWidth;
+		
+		vec4 result ;
+		result = texColor1*0.8 + (texColor1*texColor2/1.9+texColor1/4.+texColor2/4.)/5.;
+		if ( isBorder){
+			result.rgb= vec3(u_bgColor);
+		} else {
+
+			// if ( distance(result.rgb, u_bgColor.rgb)<0.01 ){
+			// 	result.a=0.;
+			// }
+		} 
+		gl_FragColor =result;	
+	}
+`
+
+
+
+//ref 3d shader from https://www.openprocessing.org/sketch/881537
+
+const vert = `
+	precision highp float;
+
+    // attributes, in
+    attribute vec3 aPosition;
+    attribute vec3 aNormal;
+    attribute vec2 aTexCoord;
+
+    // attributes, out
+    varying vec3 var_vertPos;
+    varying vec3 var_vertNormal;
+    varying vec2 var_vertTexCoord;
+		varying vec4 var_centerGlPosition;//原点
+    
+    // matrices
+    uniform mat4 uModelViewMatrix;
+    uniform mat4 uProjectionMatrix;
+    uniform mat3 uNormalMatrix;
+		uniform float u_time;
+	uniform sampler2D u_tex;
+
+	${frag_functions_default}
+
+    void main() {
+      vec3 pos = aPosition;
+			
+			
+			// vec4 texColor = texture2D(u_tex,aTexCoord);
+			// pos.x += (texColor.r-0.5)/4.;
+			// pos.y += (texColor.g-0.5)/4.;
+			// pos.z += (texColor.b-0.5)/4.;
+			
+			vec4 posOut = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1.0);
+			
+			
+			
+      gl_Position = posOut;
+
+      // set out value
+      var_vertPos      = pos;
+      var_vertNormal   =  aNormal;
+      var_vertTexCoord = aTexCoord;
+			var_centerGlPosition = uProjectionMatrix * uModelViewMatrix * vec4(0., 0., 0.,1.0);
+    }
+`;
+const frag_texture = ` 
+	precision highp float;
+
+	uniform vec2 u_resolution;
+	uniform vec2 u_mouse;
+	uniform float u_time;
+	uniform vec3 u_lightDir;
+	uniform vec3 u_col;
+	uniform mat3 uNormalMatrix;
+	uniform float u_pixelDensity;
+	uniform sampler2D u_tex; 
+
+	//attributes, in
+	varying vec4 var_centerGlPosition;
+	varying vec3 var_vertNormal;
+	varying vec2 var_vertTexCoord; 
+
+	${frag_functions_default}
+
+	void main(){
+		vec2 st = var_vertTexCoord.xy /u_resolution.xy*min(u_resolution.x,u_resolution.y);
+		st.x*=u_resolution.x/u_resolution.y;
+			st.x*=u_resolution.x/u_resolution.y;
+			float sc = 1.*u_resolution.x/100.;
+			st*=sc;
+			st*=vec2(3.,1.);
+		
+			// st.y = 1.0 - st.y;
+			vec3 color = vec3(0.);
+			color+=cnoise(vec3(st*20.,10.))/7./3.;
+			color+=cnoise(vec3(st*30.,10.))/9./3.;
+			color+=cnoise(vec3(st*10.,10.))/9./3.;
+		
+			color+=cnoise(vec3(st*200.,10.))/8.;
+			color+=cnoise(vec3(st*300.,10.))/10.;
+			color+=cnoise(vec3(st*100.,10.))/10.;
+		
+			color+=cnoise(vec3(st*200.,10.))/8.;
+			color+=cnoise(vec3(st*300.,10.))/10.;
+			color+=cnoise(vec3(st*100.,10.))/10.;
+			color+=pNoise(st*10.,5)*pNoise(st*10.+2.,10)/2.;
+			color+=pNoise(st*30.,5)*pNoise(st*40.+2.,10)/2.; 
+			color/=2.;
+		
+			color = 1.-color; 
+		
+		// vec3 color = vec3(st.x,st.y,1.);
+		gl_FragColor= vec4(color,1.0);
+	}
+`
+
+
+
+
+    </script>
+</body>
+</html>
