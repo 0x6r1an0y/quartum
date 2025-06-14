@@ -122,29 +122,6 @@
                 </div>
             </div>
         </div>
-        <div class="control-group">
-            <label>星形參數</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">頂點數: <span class="value" id="starVertexValue">5</span></label>
-                    <input type="range" id="starVertex" min="3" max="12" value="5" step="1">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">波動幅度: <span class="value" id="starWaveValue">0.1</span></label>
-                    <input type="range" id="starWave" min="0" max="0.3" value="0.1" step="0.01">
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">內徑比例: <span class="value" id="starInnerValue">0.1</span></label>
-                    <input type="range" id="starInner" min="0.05" max="0.2" value="0.1" step="0.01">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">外徑比例: <span class="value" id="starOuterValue">0.35</span></label>
-                    <input type="range" id="starOuter" min="0.2" max="0.5" value="0.35" step="0.01">
-                </div>
-            </div>
-        </div>
         <button id="resetButton" style="width: 100%; padding: 10px; margin-top: 10px;">重置參數</button>
     </div>
     <script>
@@ -207,10 +184,6 @@ class Particle{
 				parseFloat(document.getElementById('shadowX').value),
 				parseFloat(document.getElementById('shadowY').value)
 			),
-			starVertexCount: parseInt(document.getElementById('starVertex').value),
-			starWaveIntensity: parseFloat(document.getElementById('starWave').value),
-			starInnerRadius: parseFloat(document.getElementById('starInner').value),
-			starOuterRadius: parseFloat(document.getElementById('starOuter').value),
 			colorVariation: parseInt(document.getElementById('colorVariation').value)
 		}
 		Object.assign(def,args)
@@ -570,10 +543,6 @@ function setup() {
 	document.getElementById('bgRed').addEventListener('input', updateDefaultColor);
 	document.getElementById('bgGreen').addEventListener('input', updateDefaultColor);
 	document.getElementById('bgBlue').addEventListener('input', updateDefaultColor);
-	document.getElementById('starVertex').addEventListener('input', updateStarShape);
-	document.getElementById('starWave').addEventListener('input', updateStarShape);
-	document.getElementById('starInner').addEventListener('input', updateStarShape);
-	document.getElementById('starOuter').addEventListener('input', updateStarShape);
 	document.getElementById('resetButton').addEventListener('click', resetParameters);
 
 	// 初始化參數
@@ -1206,20 +1175,6 @@ function updateDefaultColor(e) {
     resetCanvas()
 }
 
-function updateStarShape(e) {
-    const points = parseInt(document.getElementById('starVertex').value)
-    const amplitude = parseFloat(document.getElementById('starWave').value)
-    const minRadius = parseFloat(document.getElementById('starInner').value)
-    const maxRadius = parseFloat(document.getElementById('starOuter').value)
-    
-    document.getElementById('starVertexValue').textContent = points
-    document.getElementById('starWaveValue').textContent = amplitude
-    document.getElementById('starInnerValue').textContent = minRadius
-    document.getElementById('starOuterValue').textContent = maxRadius
-    
-    resetCanvas()
-}
-
 function resetParameters() {
     // 重置所有滑竿到預設值
     document.getElementById('particleCount').value = 1000;
@@ -1236,10 +1191,6 @@ function resetParameters() {
     document.getElementById('bgRed').value = 255;
     document.getElementById('bgGreen').value = 255;
     document.getElementById('bgBlue').value = 255;
-    document.getElementById('starVertex').value = 5;
-    document.getElementById('starWave').value = 0.1;
-    document.getElementById('starInner').value = 0.1;
-    document.getElementById('starOuter').value = 0.35;
     
     // 觸發所有更新函數
     updateAllParameters();
@@ -1256,7 +1207,6 @@ function updateAllParameters() {
     updateRotationSpeed({target: document.getElementById('rotationFactor')});
     updateShadowOffset({target: document.getElementById('shadowX')});
     updateDefaultColor({target: document.getElementById('bgRed')});
-    updateStarShape({target: document.getElementById('starVertex')});
 }
 
 // 添加重製函數
