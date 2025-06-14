@@ -1200,6 +1200,8 @@ function updateDefaultColor(e) {
     document.getElementById('bgRedValue').textContent = r
     document.getElementById('bgGreenValue').textContent = g
     document.getElementById('bgBlueValue').textContent = b
+    
+    // 更新背景顏色
     bgColor = color(r, g, b)
     resetCanvas()
 }
@@ -1209,10 +1211,12 @@ function updateStarShape(e) {
     const amplitude = parseFloat(document.getElementById('starWave').value)
     const minRadius = parseFloat(document.getElementById('starInner').value)
     const maxRadius = parseFloat(document.getElementById('starOuter').value)
+    
     document.getElementById('starVertexValue').textContent = points
     document.getElementById('starWaveValue').textContent = amplitude
     document.getElementById('starInnerValue').textContent = minRadius
     document.getElementById('starOuterValue').textContent = maxRadius
+    
     resetCanvas()
 }
 
