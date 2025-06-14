@@ -66,82 +66,82 @@
             <input type="range" id="particleCount" min="50" max="1200" value="1000" step="50">
         </div>
         <div class="control-group">
-            <label>粒子大小: <span class="value" id="particleSizeValue">5-40</span></label>
+            <label>粒子最大尺寸: <span class="value" id="particleSizeValue">40</span></label>
             <input type="range" id="particleSize" min="1" max="100" value="40" step="1">
         </div>
         <div class="control-group">
-            <label>特殊顏色機率: <span class="value" id="specialColorValue">38%</span></label>
-            <input type="range" id="specialColor" min="0" max="100" value="38" step="1">
+            <label>隨機色彩比例: <span class="value" id="randomColorValue">38%</span></label>
+            <input type="range" id="randomColor" min="0" max="100" value="38" step="1">
         </div>
         <div class="control-group">
-            <label>紅色值: <span class="value" id="redValue">0</span></label>
-            <input type="range" id="redColor" min="0" max="255" value="0" step="1">
+            <label>主色R值: <span class="value" id="mainRedValue">0</span></label>
+            <input type="range" id="mainRed" min="0" max="255" value="0" step="1">
         </div>
         <div class="control-group">
-            <label>綠色值: <span class="value" id="greenValue">20</span></label>
-            <input type="range" id="greenColor" min="0" max="255" value="20" step="1">
+            <label>主色G值: <span class="value" id="mainGreenValue">20</span></label>
+            <input type="range" id="mainGreen" min="0" max="255" value="20" step="1">
         </div>
         <div class="control-group">
-            <label>藍色值: <span class="value" id="blueValue">90</span></label>
-            <input type="range" id="blueColor" min="0" max="255" value="90" step="1">
+            <label>主色B值: <span class="value" id="mainBlueValue">90</span></label>
+            <input type="range" id="mainBlue" min="0" max="255" value="90" step="1">
         </div>
         <div class="control-group">
-            <label>顏色變化強度: <span class="value" id="colorNoiseValue">30</span></label>
-            <input type="range" id="colorNoise" min="0" max="100" value="30" step="1">
+            <label>主色雜訊幅度: <span class="value" id="colorVariationValue">30</span></label>
+            <input type="range" id="colorVariation" min="0" max="100" value="30" step="1">
         </div>
         <div class="control-group">
-            <label>速度衰減: <span class="value" id="velocityDecayValue">0.9675</span></label>
-            <input type="range" id="velocityDecay" min="0.9" max="0.99" value="0.9675" step="0.001">
+            <label>粒子縮小率: <span class="value" id="decayRateValue">0.9675</span></label>
+            <input type="range" id="decayRate" min="0.9" max="0.99" value="0.9675" step="0.001">
         </div>
         <div class="control-group">
-            <label>旋轉速度: <span class="value" id="rotationSpeedValue">0.002</span></label>
-            <input type="range" id="rotationSpeed" min="-0.01" max="0.01" value="0.002" step="0.001">
+            <label>旋轉影響因子: <span class="value" id="rotationFactorValue">0.002</span></label>
+            <input type="range" id="rotationFactor" min="-0.01" max="0.01" value="0.002" step="0.001">
         </div>
         <div class="control-group">
-            <label>陰影偏移 X: <span class="value" id="shadowOffsetXValue">3.2</span></label>
-            <input type="range" id="shadowOffsetX" min="0" max="10" value="3.2" step="0.1">
+            <label>陰影X位移: <span class="value" id="shadowXValue">3.2</span></label>
+            <input type="range" id="shadowX" min="0" max="10" value="3.2" step="0.1">
         </div>
         <div class="control-group">
-            <label>陰影偏移 Y: <span class="value" id="shadowOffsetYValue">3.2</span></label>
-            <input type="range" id="shadowOffsetY" min="0" max="10" value="3.2" step="0.1">
+            <label>陰影Y位移: <span class="value" id="shadowYValue">3.2</span></label>
+            <input type="range" id="shadowY" min="0" max="10" value="3.2" step="0.1">
         </div>
         <div class="control-group">
-            <label>預設粒子顏色</label>
+            <label>背景顏色</label>
             <div style="display: flex; gap: 10px; margin-bottom: 5px;">
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">R: <span class="value" id="defaultRedValue">255</span></label>
-                    <input type="range" id="defaultRed" min="0" max="255" value="255" step="1">
+                    <label style="font-size: 12px;">R值: <span class="value" id="bgRedValue">255</span></label>
+                    <input type="range" id="bgRed" min="0" max="255" value="255" step="1">
                 </div>
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">G: <span class="value" id="defaultGreenValue">255</span></label>
-                    <input type="range" id="defaultGreen" min="0" max="255" value="255" step="1">
+                    <label style="font-size: 12px;">G值: <span class="value" id="bgGreenValue">255</span></label>
+                    <input type="range" id="bgGreen" min="0" max="255" value="255" step="1">
                 </div>
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">B: <span class="value" id="defaultBlueValue">255</span></label>
-                    <input type="range" id="defaultBlue" min="0" max="255" value="255" step="1">
+                    <label style="font-size: 12px;">B值: <span class="value" id="bgBlueValue">255</span></label>
+                    <input type="range" id="bgBlue" min="0" max="255" value="255" step="1">
                 </div>
             </div>
         </div>
         <div class="control-group">
-            <label>星星形狀控制</label>
+            <label>星形參數</label>
             <div style="display: flex; gap: 10px; margin-bottom: 5px;">
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">尖角數量: <span class="value" id="starPointsValue">5</span></label>
-                    <input type="range" id="starPoints" min="3" max="12" value="5" step="1">
+                    <label style="font-size: 12px;">頂點數: <span class="value" id="starVertexValue">5</span></label>
+                    <input type="range" id="starVertex" min="3" max="12" value="5" step="1">
                 </div>
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">波動幅度: <span class="value" id="starAmplitudeValue">0.1</span></label>
-                    <input type="range" id="starAmplitude" min="0" max="0.3" value="0.1" step="0.01">
+                    <label style="font-size: 12px;">波動幅度: <span class="value" id="starWaveValue">0.1</span></label>
+                    <input type="range" id="starWave" min="0" max="0.3" value="0.1" step="0.01">
                 </div>
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 5px;">
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">最小半徑: <span class="value" id="minRadiusValue">0.1</span></label>
-                    <input type="range" id="minRadius" min="0.05" max="0.2" value="0.1" step="0.01">
+                    <label style="font-size: 12px;">內徑比例: <span class="value" id="starInnerValue">0.1</span></label>
+                    <input type="range" id="starInner" min="0.05" max="0.2" value="0.1" step="0.01">
                 </div>
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">最大半徑: <span class="value" id="maxRadiusValue">0.35</span></label>
-                    <input type="range" id="maxRadius" min="0.2" max="0.5" value="0.35" step="0.01">
+                    <label style="font-size: 12px;">外徑比例: <span class="value" id="starOuterValue">0.35</span></label>
+                    <input type="range" id="starOuter" min="0.2" max="0.5" value="0.35" step="0.01">
                 </div>
             </div>
         </div>
@@ -189,22 +189,29 @@ class Wormhole{
 class Particle{
 	constructor(args){
 		let def = {
-			p: createVector(0,0),
-			lastP: createVector(-1,-1),
-			v: createVector(0,0),
-			a: createVector(0,0),
-			r: random(100),
-			followRotateFactor: random(features.rotateFactors),
-			color: random(colors),
-			//200 is original (x moving a lot)
-			steps: [int(random([2,3,10,20,30,50,120,150])),int(random([2,3,4]))],
-			shrinkRatio: random([ 0.995,0.99,0.99,0.98,0.95]),
-			vNoiseScale: features.vNoiseScale,
-			color2: random([255,255,random(colors)]),
-			randomId: int(random(10000)),
-			xSpeedFactor: random([6,8,10,12]),
-			ySpeedFactor: random([6,8,10,12])
-
+			position: createVector(0,0),
+			lastPosition: createVector(-1,-1),
+			velocity: createVector(0,0),
+			acceleration: createVector(0,0),
+			radius: random(100),
+			rotationFactor: parseFloat(document.getElementById('rotationFactor').value),
+			particleColor: random(colors),
+			movementSteps: [int(random([2,3,10,20,30,50,120,150])),int(random([2,3,4]))],
+			decayRate: parseFloat(document.getElementById('decayRate').value),
+			noiseScale: features.vNoiseScale,
+			secondaryColor: random([255,255,random(colors)]),
+			uniqueId: int(random(10000)),
+			horizontalSpeed: random([6,8,10,12]),
+			verticalSpeed: random([6,8,10,12]),
+			shadowDisplacement: createVector(
+				parseFloat(document.getElementById('shadowX').value),
+				parseFloat(document.getElementById('shadowY').value)
+			),
+			starVertexCount: parseInt(document.getElementById('starVertex').value),
+			starWaveIntensity: parseFloat(document.getElementById('starWave').value),
+			starInnerRadius: parseFloat(document.getElementById('starInner').value),
+			starOuterRadius: parseFloat(document.getElementById('starOuter').value),
+			colorVariation: parseInt(document.getElementById('colorVariation').value)
 		}
 		Object.assign(def,args)
 		Object.assign(this,def)
@@ -212,7 +219,7 @@ class Particle{
 	draw(g){
 		g.push()
 			// g.blendMode(MULTIPLY)
-			let clr = color(this.color)
+			let clr = color(this.particleColor)
 // 			clr.setAlpha(500*map(this.r,200,0,0.02,0,true))
 // 			let colorVar = 30
 // 			clr.setRed(clr._getRed()+noise(this.p.x/5,this.p.y/5)*colorVar-colorVar/2)
@@ -227,47 +234,40 @@ class Particle{
 // 			g.noFill()
 			g.fill(clr)
 		 
-			if (noise(this.p.x/50,this.p.y/50)<0.3 && random()<0.35 && features.style=="stroke"){
+			if (noise(this.position.x/50,this.position.y/50)<0.3 && random()<0.35 && features.style=="stroke"){
 				overlayGraphics.push()
 					overlayGraphics.noStroke()
 					overlayGraphics.fill(clr)
-					overlayGraphics.ellipse(this.p.x+random(-this.r,this.r),this.p.y+random(-this.r,this.r),random(6)*random()*random(0.5,1))
+					overlayGraphics.ellipse(this.position.x+random(-this.radius,this.radius),this.position.y+random(-this.radius,this.radius),random(6)*random()*random(0.5,1))
 				overlayGraphics.pop()
 			}
-			g.translate(this.p)
+			g.translate(this.position)
 		// g.noStroke()
-			if (frameCount==1 && this.randomId%5==0){
+			if (frameCount==1 && this.uniqueId%5==0){
 				g.strokeWeight(2)
-				g.stroke(this.color2)
+				g.stroke(this.secondaryColor)
 			}
 		
 			//test stroke style
 			if (features.style=="stroke" ){
 				//mountain lines
-				if ( (this.randomId+frameCount)%5==0){
+				if ( (this.uniqueId+frameCount)%5==0){
 					g.push()
 							g.blendMode(MULTIPLY)
-							clr.setAlpha(noise(this.randomId)*150)
-							g.translate(-this.p.x,-this.p.y)
-							let rr = noise(this.randomId)*5*noise(this.randomId)
+							clr.setAlpha(noise(this.uniqueId)*150)
+							g.translate(-this.position.x,-this.position.y)
+							let rr = noise(this.uniqueId)*5*noise(this.uniqueId)
 							g.stroke(clr)
 							g.strokeWeight(rr)
-							if (this.randomId%800==0){
-								clr.setAlpha(random(50,100))
-								g.stroke(clr)
-								g.strokeWeight(noise(this.randomId*500)*5)
-							} 
-							// g.noStroke()
-							// g.rect(0,0,rr,rr)
-							if (this.lastP.x!=-1){
+							if (this.lastPosition.x!=-1){
 								// console.log(this.p,this.lastP)
 								
-								g.line(this.p.x,this.p.y,this.lastP.x,this.lastP.y)
+								g.line(this.position.x,this.position.y,this.lastPosition.x,this.lastPosition.y)
 							}
-							this.lastP = this.p.copy()
+							this.lastPosition = this.position.copy()
 					g.pop()
 				}
-				if ((this.randomId+frameCount)%8==0 && this.randomId%(9 + int(50/pow(this.r/10,3)))<=1){ 
+				if ((this.uniqueId+frameCount)%8==0 && this.uniqueId%(9 + int(50/pow(this.radius/10,3)))<=1){ 
 					g.push()
 					
 						g.blendMode(MULTIPLY)
@@ -278,14 +278,14 @@ class Particle{
 					
 						clr.setAlpha(random(255))
 						g.stroke(clr)
-						// if((this.randomId+frameCount)%3==0){
+						// if((this.uniqueId+frameCount)%3==0){
 						// 	g.blendMode(MULTIPLY)
 						// }
 					
-						g.strokeWeight(noise(this.p.x/40,this.p.y/40)*2.5*random(0.3,1))
-						g.rotate(noise(this.p.x/100,this.p.y/100,this.randomId)*PI*2)
-						g.rotate(noise(this.p.x/5,this.p.y/5,this.randomId)/2)
-						if (this.randomId%4==0 && brightness(clr)>50){
+						g.strokeWeight(noise(this.position.x/40,this.position.y/40)*2.5*random(0.3,1))
+						g.rotate(noise(this.position.x/100,this.position.y/100,this.uniqueId)*PI*2)
+						g.rotate(noise(this.position.x/5,this.position.y/5,this.uniqueId)/2)
+						if (this.uniqueId%4==0 && brightness(clr)>50){
 							clr.setAlpha(random(8))
 							g.fill(clr)
 							clr.setAlpha(random(150))
@@ -293,17 +293,17 @@ class Particle{
 							if (random()<0.9){
 								g.noStroke()
 							}
-							let waterColorScale = noise(this.randomId,1000)*5+1
-							g.arc(0,0,this.r*waterColorScale,this.r*waterColorScale,0,PI)
+							let waterColorScale = noise(this.uniqueId,1000)*5+1
+							g.arc(0,0,this.radius*waterColorScale,this.radius*waterColorScale,0,PI)
 						}else{
-							g.line(0,this.r/2,this.r,-this.r/2)
+							g.line(0,this.radius/2,this.radius,-this.radius/2)
 						}
 					
 					
 					
 					g.pop()
 				}else{
-					if ((this.randomId+frameCount)%10==0){
+					if ((this.uniqueId+frameCount)%10==0){
 // 						g.push()
 // 						clr.setAlpha(5)
 // 						g.fill(clr)
@@ -315,22 +315,22 @@ class Particle{
 				}
 			}
 			if (features.style=="shape" || features.style=="stroke"){
-				if (features.style=="shape" || noise(this.p.x/52,this.p.y/52)<0.525){
+				if (features.style=="shape" || noise(this.position.x/52,this.position.y/52)<0.525){
 					if (frameCount%40==0){
 						clr.setAlpha(random(0,1))
 						g.fill(clr)
-						g.ellipse(0,0,this.r,this.r)
+						g.ellipse(0,0,this.radius,this.radius)
 
-					}else if ((this.randomId+frameCount)%8==0 && this.randomId%(9 + int(50/pow(this.r/10,3)))<=1){
+					}else if ((this.uniqueId+frameCount)%8==0 && this.uniqueId%(9 + int(50/pow(this.radius/10,3)))<=1){
 
 						g.noFill() 
 						clr.setAlpha(random(200,255))
 						g.stroke(clr)
 						g.strokeWeight(random(0,2)*random(0.5,1))
 						
-						if (this.randomId%88==0 && random()<0.2){
+						if (this.uniqueId%88==0 && random()<0.2){
 							clr.setAlpha(random(100,200))
-							g.strokeWeight(noise(this.randomId*500)*8)
+							g.strokeWeight(noise(this.uniqueId*500)*8)
 						}
 
 						
@@ -341,28 +341,28 @@ class Particle{
 							}
 						}
 
-						if (this.randomId%2==0 && frameCount%2==0){
+						if (this.uniqueId%2==0 && frameCount%2==0){
 							clr.setAlpha(random(0,1))
 							g.fill(clr)
 							g.noStroke()
 						}
-						if (this.randomId%10==0 || noise(this.p.x/120,this.p.y/120)<=0.3){
+						if (this.uniqueId%10==0 || noise(this.position.x/120,this.position.y/120)<=0.3){
 							//draw a line
-							g.rotate(noise(this.p.x*5,this.p.y*5,frameCount/10)*PI*2 )
-							g.line(0,this.r,0,-this.r)
+							g.rotate(noise(this.position.x*5,this.position.y*5,frameCount/10)*PI*2 )
+							g.line(0,this.radius,0,-this.radius)
 						}else{
-							if (this.randomId% 3==0  ){
+							if (this.uniqueId% 3==0  ){
 								clr.setAlpha(random(0,3))
 								g.fill(clr)
 							}
 							//draw an ellipse
-							g.ellipse(0,0,this.r*1.1,this.r*1.1)
+							g.ellipse(0,0,this.radius*1.1,this.radius*1.1)
 						}
 					}
 				}
 			}else if (features.style=="normal"){ 
 					//fill 
-				g.ellipse(0,0,this.r,this.r)  
+				g.ellipse(0,0,this.radius,this.radius)  
 				
 				
 				// if (noise(this.p.x/300,this.p.y/300)<0.3 && random()<0.02){
@@ -378,13 +378,13 @@ class Particle{
 		// g.ellipse(this.r*2+10,0,3,3)
 		
 			//grass
-			if (this.randomId%30==0 && frameCount%50==0 && this.r>1){
+			if (this.uniqueId%30==0 && frameCount%50==0 && this.radius>1){
 				
 				// g.fill(bgColor)
 				g.push()
-				g.translate(this.r+20,0)
-				g.stroke(this.color2)
-				g.translate(0,random([-this.r,this.r]))
+				g.translate(this.radius+20,0)
+				g.stroke(this.secondaryColor)
+				g.translate(0,random([-this.radius,this.radius]))
 				g.line(0,0,0,-5)
 				g.line(0,0,-3,-5)
 				g.line(0,0,3,-5)
@@ -396,34 +396,34 @@ class Particle{
 		
 		if (features.style=="stroke") verticalLineSpan = 35
 			// vertical lines
-			if (this.randomId%verticalLineSpan==0){
+			if (this.uniqueId%verticalLineSpan==0){
 				g.fill(0)
-				g.ellipse(0,this.r+10,2,2)
+				g.ellipse(0,this.radius+10,2,2)
 			}
 		
-			if (this.randomId%10==0){
+			if (this.uniqueId%10==0){
 				
 				g.fill(bgColor)
-				g.ellipse(this.r/2,0,2,2)
+				g.ellipse(this.radius/2,0,2,2)
 			}
-			if (this.randomId%25==0){
+			if (this.uniqueId%25==0){
 				
 				g.fill(255)
-				let whiteR = (noise(this.randomId,this.p.x/40,this.p.y/40)*3)+1
-				g.ellipse(-this.r-10,this.r+10,whiteR,whiteR)
+				let whiteR = (noise(this.uniqueId,this.position.x/40,this.position.y/40)*3)+1
+				g.ellipse(-this.radius-10,this.radius+10,whiteR,whiteR)
 			}
-			if (this.r>10 && (this.randomId+frameCount)%60==0 && this.randomId%4==0){
-				g.fill(this.color2)
-				g.ellipse(-this.r,4,4)
+			if (this.radius>10 && (this.uniqueId+frameCount)%60==0 && this.uniqueId%4==0){
+				g.fill(this.secondaryColor)
+				g.ellipse(-this.radius,4,4)
 			} 
-			if (features.style=='normal' && frameCount%50==0 && this.randomId%14==0 && random()<0.6){
+			if (features.style=='normal' && frameCount%50==0 && this.uniqueId%14==0 && random()<0.6){
 				g.push()
 				let lineSp = random([5,10,20,30,40])
 				let lineCount = random(20)
 				for(var i=0;i<random(lineCount);i++){
 					let lLan = 5
 					g.stroke(0,100)
-					g.line(-this.r-10-lLan,-i*lineSp,-this.r-10+lLan,-i*lineSp)
+					g.line(-this.radius-10-lLan,-i*lineSp,-this.radius-10+lLan,-i*lineSp)
 				}
 				g.pop()
 			}
@@ -431,7 +431,7 @@ class Particle{
 			if (random()<0.001 && frameCount%10==0){
 				g.stroke(0)
 				g.noFill()
-				g.ellipse(0,this.r+10,random(this.r))
+				g.ellipse(0,this.radius+10,random(this.radius))
 			}
 		
 
@@ -441,25 +441,25 @@ class Particle{
 		g.pop()
 	}
 	update(){
-		this.p.add(this.v)
-		this.v.add(this.a)		
-		this.r*=this.shrinkRatio
-		this.alive = this.r>0.1
-		if (random()<0.25 && frameCount % 15==0 && this.randomId%5==0){
-			this.color =random(colors)
+		this.position.add(this.velocity)
+		this.velocity.add(this.acceleration)		
+		this.radius *= this.decayRate
+		this.alive = this.radius>0.1
+		if (random()<0.25 && frameCount % 15==0 && this.uniqueId%5==0){
+			this.particleColor = random(colors)
 		}
 		
 		let steplize = (n,l)=>int(n*l)/l
-		// if (this.randomId%25==0){
-			this.v.x = (steplize(noise(this.p.x/this.vNoiseScale,this.p.y/this.vNoiseScale)-0.5,this.steps[0]))*this.xSpeedFactor
-			this.v.y = (steplize(noise(this.p.y/this.vNoiseScale,this.p.x/this.vNoiseScale)-0.5,this.steps[1]))*this.ySpeedFactor
+		// if (this.uniqueId%25==0){
+			this.velocity.x = (steplize(noise(this.position.x/this.noiseScale,this.position.y/this.noiseScale)-0.5,this.movementSteps[0]))*this.horizontalSpeed
+			this.velocity.y = (steplize(noise(this.position.y/this.noiseScale,this.position.x/this.noiseScale)-0.5,this.movementSteps[1]))*this.verticalSpeed
 			
-			let ang = atan2(this.p.y-height/2,this.p.x-width/2)
-			let r = dist(this.p.x,this.p.y,width/2,height/2)
+			let ang = atan2(this.position.y-height/2,this.position.x-width/2)
+			let r = dist(this.position.x,this.position.y,width/2,height/2)
 			
 			//rotate center
-			this.v.x += cos(ang+PI/2)*this.followRotateFactor;
-			this.v.y += sin(ang+PI/2)*this.followRotateFactor;
+			this.velocity.x += cos(ang+PI/2)*this.rotationFactor;
+			this.velocity.y += sin(ang+PI/2)*this.rotationFactor;
 // 		}else{
 // 			this.v.x = (steplize(noise(this.p.x/50,this.p.y/50)-0.5,this.steps[0]))*this.xSpeedFactor
 // 			this.v.y = (steplize(noise(this.p.y/50,this.p.x/50)-0.5,this.steps[1]))*this.ySpeedFactor
@@ -467,14 +467,14 @@ class Particle{
 // 		}
 		
 		wormholes.forEach(w=>{
-			let ang = atan2(this.p.y-w.p.y,this.p.x-w.p.x)
-			let dd = dist(this.p.x,this.p.y,w.p.x,w.p.y)
+			let ang = atan2(this.position.y-w.p.y,this.position.x-w.p.x)
+			let dd = dist(this.position.x,this.position.y,w.p.x,w.p.y)
 			let ratio = map(dd,0,w.r, 1,0,true)
 			let force = w.intensity*ratio*ratio
 			
 			//rotate center
-			this.v.x += w.rotate* force* cos(ang+PI/2) + w.attract*  force* cos(ang);
-			this.v.y += w.rotate*  force*  sin(ang+PI/2)+ w.attract*  force* sin(ang);
+			this.velocity.x += w.rotate* force* cos(ang+PI/2) + w.attract*  force* cos(ang);
+			this.velocity.y += w.rotate*  force*  sin(ang+PI/2)+ w.attract*  force* sin(ang);
 		})
 		
 
@@ -491,13 +491,13 @@ class Particle{
 		
 				
 		//quantize angle
-		if (noise(this.p.x/60,this.p.y/60)<0.2){
-			let ang = atan2(this.v.x,this.v.y) 
-			let amp = this.v.mag()
+		if (noise(this.position.x/60,this.position.y/60)<0.2){
+			let ang = atan2(this.velocity.x,this.velocity.y) 
+			let amp = this.velocity.mag()
 			let angStepCount = 8
 			let newAng = int(ang/2/PI*angStepCount)/angStepCount*2*PI
-			this.v.x = amp*cos(newAng)
-			this.v.y = amp*sin(newAng)
+			this.velocity.x = amp*cos(newAng)
+			this.velocity.y = amp*sin(newAng)
 			// originalGraphics.fill('red')
 			// originalGraphics.ellipse(this.p.x,this.p.y,5,5)
 			
@@ -555,11 +555,34 @@ function setup() {
 	pixelDensity(4)
 	createCanvas(1400,1400);
 	
+	// 添加事件監聽器
+	document.getElementById('particleCount').addEventListener('input', updateParticleCount);
+	document.getElementById('particleSize').addEventListener('input', updateParticleSize);
+	document.getElementById('randomColor').addEventListener('input', updateSpecialColor);
+	document.getElementById('mainRed').addEventListener('input', updateColor);
+	document.getElementById('mainGreen').addEventListener('input', updateColor);
+	document.getElementById('mainBlue').addEventListener('input', updateColor);
+	document.getElementById('colorVariation').addEventListener('input', updateColorNoise);
+	document.getElementById('decayRate').addEventListener('input', updateVelocityDecay);
+	document.getElementById('rotationFactor').addEventListener('input', updateRotationSpeed);
+	document.getElementById('shadowX').addEventListener('input', updateShadowOffset);
+	document.getElementById('shadowY').addEventListener('input', updateShadowOffset);
+	document.getElementById('bgRed').addEventListener('input', updateDefaultColor);
+	document.getElementById('bgGreen').addEventListener('input', updateDefaultColor);
+	document.getElementById('bgBlue').addEventListener('input', updateDefaultColor);
+	document.getElementById('starVertex').addEventListener('input', updateStarShape);
+	document.getElementById('starWave').addEventListener('input', updateStarShape);
+	document.getElementById('starInner').addEventListener('input', updateStarShape);
+	document.getElementById('starOuter').addEventListener('input', updateStarShape);
+	document.getElementById('resetButton').addEventListener('click', resetParameters);
+
+	// 初始化參數
+	updateAllParameters();
+	
 	//prepare texture
 	overallTexture = createGraphics(width,height,WEBGL)
 	overallTexture.shader(theShaderTexture)
 	theShaderTexture.setUniform('u_resolution',[width,height])
-	// theShaderTexture.setUniform('u_canvas_tex',overallTexture)
 	overallTexture.rect(-width/2,-height/2,width,height)
 	
 	
@@ -633,10 +656,10 @@ function setup() {
 			// if (noise(x,y)<ignorePossibility) continue
 			if (noise(x/gapScale,y/gapScale)<=gapRatio) continue
 			particles.push(new Particle({
-				p: createVector(x,
+				position: createVector(x,
 												y),
-				r: noise(x,y)*maxSize*random(1),
-				color: random(colors)
+				radius: noise(x,y)*maxSize*random(1),
+				particleColor: random(colors)
 			}))
 			
 			let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
@@ -1115,9 +1138,179 @@ const frag_texture = `
 	}
 `
 
+// 更新函數
+function updateParticleCount(e) {
+    const value = parseInt(e.target.value)
+    document.getElementById('particleCountValue').textContent = value
+    resetCanvas()
+}
 
+function updateParticleSize(e) {
+    const value = parseInt(e.target.value)
+    document.getElementById('particleSizeValue').textContent = value
+    resetCanvas()
+}
 
+function updateSpecialColor(e) {
+    const value = parseInt(e.target.value)
+    document.getElementById('randomColorValue').textContent = value + '%'
+    resetCanvas()
+}
 
+function updateColor(e) {
+    const r = parseInt(document.getElementById('mainRed').value)
+    const g = parseInt(document.getElementById('mainGreen').value)
+    const b = parseInt(document.getElementById('mainBlue').value)
+    document.getElementById('mainRedValue').textContent = r
+    document.getElementById('mainGreenValue').textContent = g
+    document.getElementById('mainBlueValue').textContent = b
+    resetCanvas()
+}
+
+function updateColorNoise(e) {
+    const value = parseInt(e.target.value)
+    document.getElementById('colorVariationValue').textContent = value
+    resetCanvas()
+}
+
+function updateVelocityDecay(e) {
+    const value = parseFloat(e.target.value)
+    document.getElementById('decayRateValue').textContent = value
+    resetCanvas()
+}
+
+function updateRotationSpeed(e) {
+    const value = parseFloat(e.target.value)
+    document.getElementById('rotationFactorValue').textContent = value
+    resetCanvas()
+}
+
+function updateShadowOffset(e) {
+    const x = parseFloat(document.getElementById('shadowX').value)
+    const y = parseFloat(document.getElementById('shadowY').value)
+    document.getElementById('shadowXValue').textContent = x
+    document.getElementById('shadowYValue').textContent = y
+    resetCanvas()
+}
+
+function updateDefaultColor(e) {
+    const r = parseInt(document.getElementById('bgRed').value)
+    const g = parseInt(document.getElementById('bgGreen').value)
+    const b = parseInt(document.getElementById('bgBlue').value)
+    document.getElementById('bgRedValue').textContent = r
+    document.getElementById('bgGreenValue').textContent = g
+    document.getElementById('bgBlueValue').textContent = b
+    bgColor = color(r, g, b)
+    resetCanvas()
+}
+
+function updateStarShape(e) {
+    const points = parseInt(document.getElementById('starVertex').value)
+    const amplitude = parseFloat(document.getElementById('starWave').value)
+    const minRadius = parseFloat(document.getElementById('starInner').value)
+    const maxRadius = parseFloat(document.getElementById('starOuter').value)
+    document.getElementById('starVertexValue').textContent = points
+    document.getElementById('starWaveValue').textContent = amplitude
+    document.getElementById('starInnerValue').textContent = minRadius
+    document.getElementById('starOuterValue').textContent = maxRadius
+    resetCanvas()
+}
+
+function resetParameters() {
+    // 重置所有滑竿到預設值
+    document.getElementById('particleCount').value = 1000;
+    document.getElementById('particleSize').value = 40;
+    document.getElementById('randomColor').value = 38;
+    document.getElementById('mainRed').value = 0;
+    document.getElementById('mainGreen').value = 20;
+    document.getElementById('mainBlue').value = 90;
+    document.getElementById('colorVariation').value = 30;
+    document.getElementById('decayRate').value = 0.9675;
+    document.getElementById('rotationFactor').value = 0.002;
+    document.getElementById('shadowX').value = 3.2;
+    document.getElementById('shadowY').value = 3.2;
+    document.getElementById('bgRed').value = 255;
+    document.getElementById('bgGreen').value = 255;
+    document.getElementById('bgBlue').value = 255;
+    document.getElementById('starVertex').value = 5;
+    document.getElementById('starWave').value = 0.1;
+    document.getElementById('starInner').value = 0.1;
+    document.getElementById('starOuter').value = 0.35;
+    
+    // 觸發所有更新函數
+    updateAllParameters();
+}
+
+function updateAllParameters() {
+    // 觸發所有更新函數
+    updateParticleCount({target: document.getElementById('particleCount')});
+    updateParticleSize({target: document.getElementById('particleSize')});
+    updateSpecialColor({target: document.getElementById('randomColor')});
+    updateColor({target: document.getElementById('mainRed')});
+    updateColorNoise({target: document.getElementById('colorVariation')});
+    updateVelocityDecay({target: document.getElementById('decayRate')});
+    updateRotationSpeed({target: document.getElementById('rotationFactor')});
+    updateShadowOffset({target: document.getElementById('shadowX')});
+    updateDefaultColor({target: document.getElementById('bgRed')});
+    updateStarShape({target: document.getElementById('starVertex')});
+}
+
+// 添加重製函數
+function resetCanvas() {
+    // 清除現有粒子
+    particles = []
+    
+    // 重新初始化粒子
+    let spanOptions = [8,10,12,20,32,44,60,68]
+    let maxSizeOptions = [160,200,300,400,500,600,840,900]
+    
+    let pairId = int(random(6))
+    let minPairId = 0
+    let maxPairId = random([5,6,7])
+    let span = spanOptions[pairId]
+    let maxSize = maxSizeOptions[pairId]
+    let pairNoiseScale = random([10,20,100,200])
+    
+    let ignorePossibility = random([0.05,0.3])
+    let gapScale = random([100,150,200,250])
+    let gapRatio = random([0.3,0.35,0.4,0.45,0.5])
+    
+    // 獲取當前顏色設置
+    const r = parseInt(document.getElementById('mainRed').value)
+    const g = parseInt(document.getElementById('mainGreen').value)
+    const b = parseInt(document.getElementById('mainBlue').value)
+    const randomColorProb = parseInt(document.getElementById('randomColor').value)
+    const colorVariationValue = parseInt(document.getElementById('colorVariation').value)
+    
+    for(let x=0; x<=width; x+=span){
+        if (noise(x/2)<ignorePossibility) continue
+        for(let y=0; y<=height; y+=span){
+            if (noise(x/gapScale,y/gapScale)<=gapRatio) continue
+            
+            // 決定粒子顏色
+            let particleColor
+            if(random(100) < randomColorProb) {
+                particleColor = random(colors)
+            } else {
+                const noise = random(-colorVariationValue, colorVariationValue)
+                const nr = constrain(r + noise, 0, 255)
+                const ng = constrain(g + noise, 0, 255)
+                const nb = constrain(b + noise, 0, 255)
+                particleColor = color(nr, ng, nb)
+            }
+            
+            particles.push(new Particle({
+                position: createVector(x, y),
+                radius: noise(x,y)*maxSize*random(1),
+                particleColor: particleColor
+            }))
+            
+            let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
+            span = spanOptions[pairId]
+            maxSize = maxSizeOptions[pairId]
+        }
+    }
+}
     </script>
 </body>
 </html>

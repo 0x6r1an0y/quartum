@@ -61,90 +61,86 @@
 </head>
 <body>
     <div id="controlPanel">
-        <div class="control-group">
-            <label>粒子數量: <span class="value" id="particleCountValue">1000</span></label>
-            <input type="range" id="particleCount" min="50" max="1200" value="1000" step="50">
+<div class="control-group">
+    <label>藝術風格: <span class="value" id="artStyleValue">普通</span></label>
+    <select id="artStyle">
+        <option value="normal">普通</option>
+        <option value="stroke">筆觸</option>
+        <option value="shape">形狀</option>
+    </select>
+</div>
+
+<div class="control-group">
+    <label>噪聲縮放: <span class="value" id="noiseScaleValue">75</span></label>
+    <input type="range" id="noiseScale" min="40" max="200" value="75" step="5">
+</div>
+
+<div class="control-group">
+    <label>蟲洞數量: <span class="value" id="wormholeCountValue">3</span></label>
+    <input type="range" id="wormholeCount" min="1" max="8" value="3" step="1">
+</div>
+
+<div class="control-group">
+    <label>畫布變換</label>
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">X偏移: <span class="value" id="canvasOffsetXValue">0</span></label>
+            <input type="range" id="canvasOffsetX" min="-0.2" max="0.2" value="0" step="0.01">
         </div>
-        <div class="control-group">
-            <label>粒子大小: <span class="value" id="particleSizeValue">5-40</span></label>
-            <input type="range" id="particleSize" min="1" max="100" value="40" step="1">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">Y偏移: <span class="value" id="canvasOffsetYValue">0</span></label>
+            <input type="range" id="canvasOffsetY" min="-0.2" max="0.2" value="0" step="0.01">
         </div>
-        <div class="control-group">
-            <label>特殊顏色機率: <span class="value" id="specialColorValue">38%</span></label>
-            <input type="range" id="specialColor" min="0" max="100" value="38" step="1">
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">縮放: <span class="value" id="canvasScaleValue">1</span></label>
+            <input type="range" id="canvasScale" min="0.5" max="3" value="1" step="0.1">
         </div>
-        <div class="control-group">
-            <label>紅色值: <span class="value" id="redValue">0</span></label>
-            <input type="range" id="redColor" min="0" max="255" value="0" step="1">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">旋轉: <span class="value" id="canvasRotateValue">0</span></label>
+            <input type="range" id="canvasRotate" min="-0.5" max="0.5" value="0" step="0.01">
         </div>
-        <div class="control-group">
-            <label>綠色值: <span class="value" id="greenValue">20</span></label>
-            <input type="range" id="greenColor" min="0" max="255" value="20" step="1">
+    </div>
+</div>
+
+<div class="control-group">
+    <label>粒子行為參數</label>
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">跟隨因子: <span class="value" id="followFactorValue">0.05</span></label>
+            <input type="range" id="followFactor" min="-0.1" max="0.1" value="0.05" step="0.01">
         </div>
-        <div class="control-group">
-            <label>藍色值: <span class="value" id="blueValue">90</span></label>
-            <input type="range" id="blueColor" min="0" max="255" value="90" step="1">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">收縮率: <span class="value" id="shrinkRatioValue">0.99</span></label>
+            <input type="range" id="shrinkRatio" min="0.95" max="0.999" value="0.99" step="0.001">
         </div>
-        <div class="control-group">
-            <label>顏色變化強度: <span class="value" id="colorNoiseValue">30</span></label>
-            <input type="range" id="colorNoise" min="0" max="100" value="30" step="1">
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">X速度: <span class="value" id="xSpeedValue">8</span></label>
+            <input type="range" id="xSpeed" min="2" max="20" value="8" step="1">
         </div>
-        <div class="control-group">
-            <label>速度衰減: <span class="value" id="velocityDecayValue">0.9675</span></label>
-            <input type="range" id="velocityDecay" min="0.9" max="0.99" value="0.9675" step="0.001">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">Y速度: <span class="value" id="ySpeedValue">8</span></label>
+            <input type="range" id="ySpeed" min="2" max="20" value="8" step="1">
         </div>
-        <div class="control-group">
-            <label>旋轉速度: <span class="value" id="rotationSpeedValue">0.002</span></label>
-            <input type="range" id="rotationSpeed" min="-0.01" max="0.01" value="0.002" step="0.001">
+    </div>
+</div>
+
+<div class="control-group">
+    <label>粒子生成參數</label>
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">間距: <span class="value" id="particleSpanValue">20</span></label>
+            <input type="range" id="particleSpan" min="8" max="68" value="20" step="4">
         </div>
-        <div class="control-group">
-            <label>陰影偏移 X: <span class="value" id="shadowOffsetXValue">3.2</span></label>
-            <input type="range" id="shadowOffsetX" min="0" max="10" value="3.2" step="0.1">
+        <div style="flex: 1;">
+            <label style="font-size: 12px;">最大尺寸: <span class="value" id="maxSizeValue">300</span></label>
+            <input type="range" id="maxSize" min="160" max="900" value="300" step="20">
         </div>
-        <div class="control-group">
-            <label>陰影偏移 Y: <span class="value" id="shadowOffsetYValue">3.2</span></label>
-            <input type="range" id="shadowOffsetY" min="0" max="10" value="3.2" step="0.1">
-        </div>
-        <div class="control-group">
-            <label>預設粒子顏色</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">R: <span class="value" id="defaultRedValue">255</span></label>
-                    <input type="range" id="defaultRed" min="0" max="255" value="255" step="1">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">G: <span class="value" id="defaultGreenValue">255</span></label>
-                    <input type="range" id="defaultGreen" min="0" max="255" value="255" step="1">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">B: <span class="value" id="defaultBlueValue">255</span></label>
-                    <input type="range" id="defaultBlue" min="0" max="255" value="255" step="1">
-                </div>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>星星形狀控制</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">尖角數量: <span class="value" id="starPointsValue">5</span></label>
-                    <input type="range" id="starPoints" min="3" max="12" value="5" step="1">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">波動幅度: <span class="value" id="starAmplitudeValue">0.1</span></label>
-                    <input type="range" id="starAmplitude" min="0" max="0.3" value="0.1" step="0.01">
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">最小半徑: <span class="value" id="minRadiusValue">0.1</span></label>
-                    <input type="range" id="minRadius" min="0.05" max="0.2" value="0.1" step="0.01">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">最大半徑: <span class="value" id="maxRadiusValue">0.35</span></label>
-                    <input type="range" id="maxRadius" min="0.2" max="0.5" value="0.35" step="0.01">
-                </div>
-            </div>
-        </div>
+    </div>
+</div>
         <button id="resetButton" style="width: 100%; padding: 10px; margin-top: 10px;">重置參數</button>
     </div>
     <script>
@@ -188,27 +184,25 @@ class Wormhole{
 }
 class Particle{
 	constructor(args){
-		let def = {
-			p: createVector(0,0),
-			lastP: createVector(-1,-1),
-			v: createVector(0,0),
-			a: createVector(0,0),
-			r: random(100),
-			followRotateFactor: random(features.rotateFactors),
-			color: random(colors),
-			//200 is original (x moving a lot)
-			steps: [int(random([2,3,10,20,30,50,120,150])),int(random([2,3,4]))],
-			shrinkRatio: random([ 0.995,0.99,0.99,0.98,0.95]),
-			vNoiseScale: features.vNoiseScale,
-			color2: random([255,255,random(colors)]),
-			randomId: int(random(10000)),
-			xSpeedFactor: random([6,8,10,12]),
-			ySpeedFactor: random([6,8,10,12])
-
-		}
-		Object.assign(def,args)
-		Object.assign(this,def)
-	}
+        let def = {
+            p: createVector(0,0),
+            lastP: createVector(-1,-1),
+            v: createVector(0,0),
+            a: createVector(0,0),
+            r: random(100),
+            followRotateFactor: controlParams.followFactor,  // 使用控制參數
+            color: random(colors),
+            steps: [int(random([2,3,10,20,30,50,120,150])),int(random([2,3,4]))],
+            shrinkRatio: controlParams.shrinkRatio,  // 使用控制參數
+            vNoiseScale: features.vNoiseScale,
+            color2: random([255,255,random(colors)]),
+            randomId: int(random(10000)),
+            xSpeedFactor: controlParams.xSpeed,  // 使用控制參數
+            ySpeedFactor: controlParams.ySpeed   // 使用控制參數
+        }
+        Object.assign(def,args)
+        Object.assign(this,def)
+    }
 	draw(g){
 		g.push()
 			// g.blendMode(MULTIPLY)
@@ -518,36 +512,37 @@ let wormholes = []
 let overallTexture
 let bgColor
 let sortedColors = []
+// 控制參數（替換原來的隨機值）
+let controlParams = {
+    artStyle: 'normal',
+    noiseScale: 75,
+    wormholeCount: 3,
+    canvasOffsetX: 0,
+    canvasOffsetY: 0,
+    canvasScale: 1,
+    canvasRotate: 0,
+    followFactor: 0.05,
+    shrinkRatio: 0.99,
+    xSpeed: 8,
+    ySpeed: 8,
+    particleSpan: 20,
+    maxSize: 300,
+    hasBgBorder: true
+};
 function preload(){
-	// randomSeed(3390)
-	// noiseSeed(20)
-	colors = random(themes)
-	
-	sortedColors = colors.sort((a,b)=>brightness(color(b))-brightness(color(a)))
-	
-	
-	theShader = new p5.Shader(this.renderer,vert,frag)
-	theShaderTexture = new p5.Shader(this.renderer,vert,frag_texture)
-	// overallTexture = loadImage("canvas-light.jpeg") 
-		
-	
-	features.style='normal'
-	// features.style=random()<1?'stroke':'normal'
-	// features.style=random()<0.2?'shape':features.style
-	features.hasBgBorder = random()<0.5;
-	features.rotateFactors = random([
-		[0],
-		[0],
-		[0],
-		[0],
-		[0,0.05],
-		[0,-0.05],
-		[0.05,0,0,0,0,0,0,-0.05]
-		
-	])
-	features.vNoiseScale = random([40,50,75,100,120])
-	features.hasGrid = false
-	features.wormholeCount = random([1,2,3,4,5])
+    colors = random(themes)
+    sortedColors = colors.sort((a,b)=>brightness(color(b))-brightness(color(a)))
+    
+    theShader = new p5.Shader(this.renderer,vert,frag)
+    theShaderTexture = new p5.Shader(this.renderer,vert,frag_texture)
+    
+    // 使用控制參數替換隨機值
+    features.style = controlParams.artStyle;
+    features.hasBgBorder = controlParams.hasBgBorder;
+    features.rotateFactors = [0, controlParams.followFactor];
+    features.vNoiseScale = controlParams.noiseScale;
+    features.hasGrid = false;
+    features.wormholeCount = controlParams.wormholeCount;
 }
 
 function setup() {
@@ -571,20 +566,17 @@ function setup() {
 	overlayGraphics.noStroke()
 	originalGraphics.noStroke()
 	
-	let rx = random([-0.1,-0.05,0,0,0.05,0.1])*width;
-	let	ry = random([-0.1,-0.05,0,0,0.05,0.1])*height
-	let ra = random([-0.2,-0.1,0,0,0.1,0.2])
-	
-	for(let g of [originalGraphics,overlayGraphics]){
-		// console.log(g)
-		g.translate(rx,ry)
-		g.translate(width/2,height/2)
-		// g.rotate(ra)
-		// if (!features.style=="normal"){
-			g.scale(random([1,1.2,1.5,2,3]))
-		// }
-		g.translate(-width/2,-height/2)
-	}
+	let rx = controlParams.canvasOffsetX * width;
+    let ry = controlParams.canvasOffsetY * height;
+    let ra = controlParams.canvasRotate;
+    
+    for(let g of [originalGraphics,overlayGraphics]){
+        g.translate(rx,ry)
+        g.translate(width/2,height/2)
+        g.rotate(ra)
+        g.scale(controlParams.canvasScale)
+        g.translate(-width/2,-height/2)
+    }
 
 	
 	background(100)
@@ -614,8 +606,8 @@ function setup() {
 	
 	let minPairId = 0
 	let maxPairId = random([5,6,7])
-	let span = spanOptions[pairId]
-	let maxSize = maxSizeOptions[pairId]
+	let span = controlParams.particleSpan;
+    let maxSize = controlParams.maxSize;
 	let pairNoiseScale = random([10,20,100,200])
 
 	let ignorePossibility = random([0.05,0.3])
