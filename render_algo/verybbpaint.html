@@ -1343,8 +1343,9 @@ function simulate() {
                 
                 // 只在第一個控制位處理Toffoli門，避免重複
                 if (role === "control1" && !processedToffoli.has(`${toffoliCol}-${control1}-${control2}-${target}`)) {
-                    const U = createToffoli(nq, control1, control2, target);
-                    state = applyGate(state, U);
+                    console.log(`處理Toffoli門: 控制位1=${control1}, 控制位2=${control2}, 目標位=${target}`);
+                    const toffoliMatrix = createToffoli(nq, control1, control2, target);
+                    state = math.multiply(toffoliMatrix, state);
                     hasCNOT = true;
                     processedToffoli.add(`${toffoliCol}-${control1}-${control2}-${target}`);
                 }
