@@ -126,6 +126,31 @@
             transform: translateY(0);
         }
 
+        .clear-all-button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-all-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .clear-all-button:active {
+            transform: translateY(0);
+        }
+
         canvas {
             background: transparent !important;
             position: relative !important;
@@ -482,6 +507,12 @@
                 <div class="control-group">
                     <label>欄位數</label>
                     <input type="number" id="numCols" min="1" max="12" value="6" onchange="renderCircuit()">
+                </div>
+                <div class="control-group">
+                    <label>電路控制</label>
+                    <button class="clear-all-button" onclick="clearAllGates()" title="清除電路中的所有量子門">
+                        清除所有門
+                    </button>
                 </div>
             </div>
             
@@ -909,6 +940,114 @@ function clearToffoliGate(cell) {
     if (typeof resetCanvas === 'function') {
         resetCanvas();
     }
+}
+
+function clearAllGates() {
+    const table = document.getElementById("circuitTable");
+    if (!table || !table.rows.length) return;
+    
+    // 檢查是否有門需要清除
+    let hasGates = false;
+    for (let r = 0; r < table.rows.length; r++) {
+        const row = table.rows[r];
+        for (let c = 0; c < row.cells.length; c++) {
+            const cell = row.cells[c];
+            if (cell.getAttribute('data-gate') && cell.getAttribute('data-gate') !== '') {
+                hasGates = true;
+                break;
+            }
+        }
+        if (hasGates) break;
+    }
+    
+    if (!hasGates) {
+        alert('電路中沒有量子門需要清除。');
+        return;
+    }
+    
+    // 確認操作
+    if (!confirm('確定要清除電路中的所有量子門嗎？此操作無法復原。')) {
+        return;
+    }
+    
+    // 添加視覺反饋
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '清除中...';
+    button.disabled = true;
+    
+    // 遍歷所有格子並清除門
+    let clearedCount = 0;
+    for (let r = 0; r < table.rows.length; r++) {
+        const row = table.rows[r];
+        for (let c = 0; c < row.cells.length; c++) {
+            const cell = row.cells[c];
+            
+            // 檢查是否有門需要清除
+            if (cell.getAttribute('data-gate') && cell.getAttribute('data-gate') !== '') {
+                clearedCount++;
+                
+                // 添加清除動畫效果
+                cell.style.transform = 'scale(0.8)';
+                cell.style.opacity = '0.5';
+                
+                setTimeout(() => {
+                    // 清除所有門相關的屬性和樣式
+                    cell.textContent = '';
+                    cell.setAttribute('data-gate', '');
+                    cell.removeAttribute('data-col');
+                    
+                    // 清除CNOT門相關屬性
+                    cell.removeAttribute('data-cnot-role');
+                    cell.removeAttribute('data-cnot-partner');
+                    cell.removeAttribute('data-cnot-col');
+                    
+                    // 清除Toffoli門相關屬性
+                    cell.removeAttribute('data-toffoli-role');
+                    cell.removeAttribute('data-toffoli-control1');
+                    cell.removeAttribute('data-toffoli-control2');
+                    cell.removeAttribute('data-toffoli-target');
+                    cell.removeAttribute('data-toffoli-col');
+                    
+                    // 清除所有量子門樣式類
+                    cell.classList.remove('cnot-control', 'cnot-target', 'toffoli-control1', 'toffoli-control2', 'toffoli-target');
+                    
+                    // 清除title屬性
+                    cell.title = '';
+                    
+                    // 重置背景樣式
+                    cell.style.background = '';
+                    
+                    // 恢復正常樣式
+                    cell.style.transform = '';
+                    cell.style.opacity = '';
+                }, 100 + (r * 50) + (c * 20)); // 錯開動畫時間
+            }
+        }
+    }
+    
+    // 延遲執行模擬和重整，等待動畫完成
+    setTimeout(() => {
+        // 重新模擬量子電路（現在是空電路）
+        simulate();
+        
+        // 重整畫布
+        if (typeof resetCanvas === 'function') {
+            resetCanvas();
+        }
+        
+        // 恢復按鈕狀態
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        console.log(`已清除 ${clearedCount} 個量子門`);
+        
+        // 顯示成功訊息
+        const output = document.getElementById('output');
+        if (output) {
+            output.textContent = `已清除 ${clearedCount} 個量子門，電路已重置為初始態 |000...⟩`;
+        }
+    }, 500);
 }
 
 function renderCircuit() {
