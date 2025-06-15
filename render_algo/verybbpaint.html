@@ -98,10 +98,10 @@
         }
 
         .canvas-controls {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 10;
+            text-align: center;
+            padding: 1rem 0;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            margin-top: 1rem;
         }
 
         .download-button {
@@ -513,12 +513,12 @@
         </div>
 
         <div class="canvas-container">
+            <div id="canvasWrapper"></div>
             <div class="canvas-controls">
                 <button class="download-button" onclick="downloadArtwork()">
                     下載藝術作品
                 </button>
             </div>
-            <div id="canvasWrapper"></div>
         </div>
     </div>
     <script>
