@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子視覺藝術化專案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .main-header h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-header p {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .navigation-container {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .nav-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            width: 320px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        }
+
+        .nav-card h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4c1d95;
+            margin-bottom: 1rem;
+        }
+
+        .nav-card p {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .nav-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .combined-view {
+            margin-top: 2rem;
+        }
+
+        .combined-button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-header fade-in">
+        <h1>量子視覺藝術化專案</h1>
+        <p>透過量子電路控制視覺生成參數，創造獨特的量子藝術作品</p>
+    </div>
+
+    <div class="navigation-container fade-in">
+        <a href="quantum_control.html" class="nav-card">
+            <h2>量子電路控制</h2>
+            <p>設計和調整量子電路，設定量子閘的組合和參數，觀察量子態的演化過程</p>
+            <div class="nav-button">進入控制面板</div>
+        </a>
+
+        <a href="visual_canvas.html" class="nav-card">
+            <h2>視覺畫布</h2>
+            <p>基於量子電路計算結果生成藝術作品，即時觀看量子態如何影響視覺效果</p>
+            <div class="nav-button">查看藝術作品</div>
+        </a>
+    </div>
+
+    <div class="combined-view fade-in">
+        <a href="verybbpaint.html" class="nav-button combined-button">完整整合視圖</a>
+    </div>
+</body>
+</html> 
