@@ -5,127 +5,751 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>量子視覺藝術化專案</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: Arial, sans-serif;
-            display: flex;  /* 使用 flex 布局 */
+            box-sizing: border-box;
         }
-        
-        #controlPanel {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
             color: white;
-            z-index: 1000;
-            width: 300px;
-            max-height: calc(100vh - 20px);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem 2rem;
+            flex: 1;
+        }
+
+        .circuit-panel {
+            width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-height: calc(100vh - 200px);
             overflow-y: auto;
         }
 
+        .canvas-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+        }
+
         canvas {
-			background: transparent !important;
-            position: fixed !important;
-            left: 340px !important;  /* 控制面板寬度 + 間距 */
-            top: 0 !important;
-            width: calc(100vw - 340px) !important;
-            height: 100vh !important;
+            background: transparent !important;
+            position: relative !important;
+            width: 100% !important;
+            height: calc(100vh - 300px) !important;
+            border-radius: 15px;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
         }
 
         .control-group {
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .control-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #fff;
+            font-weight: 600;
+            color: #4c1d95;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .control-group input {
-            width: 100%;
-            margin-bottom: 5px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            width: 100px;
         }
 
-        .control-group .value {
-            font-size: 12px;
-            color: #aaa;
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .gates-section {
+            margin-bottom: 2rem;
+        }
+
+        .gates-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4c1d95;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gates-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .gate {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            cursor: grab;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .gate:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .gate:active {
+            cursor: grabbing;
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .circuit-container {
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .circuit-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #4c1d95;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 8px;
+            width: 100%;
+            min-width: 400px;
+        }
+
+        td {
+            border: 2px solid #e5e7eb;
+            text-align: center;
+            padding: 0.75rem;
+            min-width: 60px;
+            height: 60px;
+            position: relative;
+            border-radius: 12px;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        td:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        td[data-gate="H"] { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        td[data-gate="X"] { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        td[data-gate="Y"] { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        td[data-gate="Z"] { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+        td[data-gate="C"] { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+        td[data-gate="D"] { background: linear-gradient(135deg, #ec4899, #db2777); color: white; }
+
+        .qubit-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-right: 1rem;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 1rem;
+        }
+
+        .qubit-label {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #4c1d95;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 12px;
+            min-width: 50px;
+            border: 2px solid #bae6fd;
+            font-size: 0.9rem;
+        }
+
+        .circuit-wrapper {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        select {
+            font-size: 0.7rem;
+            margin: 2px 0;
+            padding: 0.2rem;
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        .output-section {
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+        }
+
+        .output-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4c1d95;
+            margin-bottom: 1rem;
+        }
+
+        pre {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid #4b5563;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .parameters-display {
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .param-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .param-label {
+            font-weight: 600;
+            color: #4c1d95;
+        }
+
+        .param-value {
+            color: #6b7280;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <div id="controlPanel">
-        <div class="control-group">
-            <label>粒子數量: <span class="value" id="particleCountValue">1000</span></label>
-            <input type="range" id="particleCount" min="50" max="1200" value="1000" step="50">
-        </div>
-        <div class="control-group">
-            <label>粒子最大尺寸: <span class="value" id="particleSizeValue">40</span></label>
-            <input type="range" id="particleSize" min="1" max="100" value="40" step="1">
-        </div>
-        <div class="control-group">
-            <label>隨機色彩比例: <span class="value" id="randomColorValue">38%</span></label>
-            <input type="range" id="randomColor" min="0" max="100" value="38" step="1">
-        </div>
-        <div class="control-group">
-            <label>主色R值: <span class="value" id="mainRedValue">0</span></label>
-            <input type="range" id="mainRed" min="0" max="255" value="0" step="1">
-        </div>
-        <div class="control-group">
-            <label>主色G值: <span class="value" id="mainGreenValue">20</span></label>
-            <input type="range" id="mainGreen" min="0" max="255" value="20" step="1">
-        </div>
-        <div class="control-group">
-            <label>主色B值: <span class="value" id="mainBlueValue">90</span></label>
-            <input type="range" id="mainBlue" min="0" max="255" value="90" step="1">
-        </div>
-        <div class="control-group">
-            <label>主色雜訊幅度: <span class="value" id="colorVariationValue">30</span></label>
-            <input type="range" id="colorVariation" min="0" max="100" value="30" step="1">
-        </div>
-        <div class="control-group">
-            <label>粒子縮小率: <span class="value" id="decayRateValue">0.9675</span></label>
-            <input type="range" id="decayRate" min="0.9" max="0.99" value="0.9675" step="0.001">
-        </div>
-        <div class="control-group">
-            <label>旋轉影響因子: <span class="value" id="rotationFactorValue">0.002</span></label>
-            <input type="range" id="rotationFactor" min="-0.01" max="0.01" value="0.002" step="0.001">
-        </div>
-        <div class="control-group">
-            <label>陰影X位移: <span class="value" id="shadowXValue">3.2</span></label>
-            <input type="range" id="shadowX" min="0" max="10" value="3.2" step="0.1">
-        </div>
-        <div class="control-group">
-            <label>陰影Y位移: <span class="value" id="shadowYValue">3.2</span></label>
-            <input type="range" id="shadowY" min="0" max="10" value="3.2" step="0.1">
-        </div>
-        <div class="control-group">
-            <label>背景顏色</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">R值: <span class="value" id="bgRedValue">255</span></label>
-                    <input type="range" id="bgRed" min="0" max="255" value="255" step="1">
+    <div class="header fade-in">
+        <h1>量子視覺藝術化專案</h1>
+        <p>透過量子電路控制視覺生成參數，創造獨特的量子藝術作品</p>
+    </div>
+
+    <div class="main-container">
+        <div class="circuit-panel">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label>量子位元</label>
+                    <input type="number" id="numQubits" min="1" max="6" value="3" onchange="renderCircuit()">
                 </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">G值: <span class="value" id="bgGreenValue">255</span></label>
-                    <input type="range" id="bgGreen" min="0" max="255" value="255" step="1">
+                <div class="control-group">
+                    <label>欄位數</label>
+                    <input type="number" id="numCols" min="1" max="12" value="6" onchange="renderCircuit()">
                 </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">B值: <span class="value" id="bgBlueValue">255</span></label>
-                    <input type="range" id="bgBlue" min="0" max="255" value="255" step="1">
+            </div>
+            
+            <div class="gates-section">
+                <div class="gates-title">量子閘</div>
+                <div class="gates-container">
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="H" title="Hadamard Gate">H</div>
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="X" title="Pauli-X Gate">X</div>
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="Y" title="Pauli-Y Gate">Y</div>
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="Z" title="Pauli-Z Gate">Z</div>
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="C" title="CNOT Gate">C</div>
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="D" title="Toffoli Gate">D</div>
+                </div>
+            </div>
+
+            <div class="circuit-container">
+                <div class="circuit-title">量子電路設計</div>
+                <div class="circuit-wrapper">
+                    <div class="qubit-labels" id="qubitLabels"></div>
+                    <table id="circuitTable"></table>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-title">量子態向量</div>
+                <pre id="output">拖拽量子閘到電路中查看量子態演化...</pre>
+            </div>
+
+            <div class="parameters-display">
+                <div class="output-title">繪畫參數</div>
+                <div id="parametersDisplay">
+                    <div class="param-item">
+                        <span class="param-label">粒子數量:</span>
+                        <span class="param-value" id="particleCountDisplay">1000</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">粒子尺寸係數:</span>
+                        <span class="param-value" id="particleSizeDisplay">40</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">隨機色彩比例:</span>
+                        <span class="param-value" id="randomColorDisplay">38%</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">主色調 (R,G,B):</span>
+                        <span class="param-value" id="mainColorDisplay">(0, 20, 90)</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">色彩變化幅度:</span>
+                        <span class="param-value" id="colorVariationDisplay">30</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">粒子衰減率:</span>
+                        <span class="param-value" id="decayRateDisplay">0.9675</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">旋轉因子:</span>
+                        <span class="param-value" id="rotationFactorDisplay">0.002</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">陰影位移 (X,Y):</span>
+                        <span class="param-value" id="shadowOffsetDisplay">(3.2, 3.2)</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">背景色 (R,G,B):</span>
+                        <span class="param-value" id="bgColorDisplay">(255, 255, 255)</span>
+                    </div>
                 </div>
             </div>
         </div>
-        <button id="resetButton" style="width: 100%; padding: 10px; margin-top: 10px;">重置參數</button>
+
+        <div class="canvas-container">
+            <div id="canvasWrapper"></div>
+        </div>
     </div>
     <script>
         // noprotect
+
+// 量子電路參數
+let circuitMeta = {};
+let quantumParameters = {
+    particleCount: 1000,
+    particleSize: 40,
+    randomColor: 38,
+    mainRed: 0,
+    mainGreen: 20,
+    mainBlue: 90,
+    colorVariation: 30,
+    decayRate: 0.9675,
+    rotationFactor: 0.002,
+    shadowX: 3.2,
+    shadowY: 3.2,
+    bgRed: 255,
+    bgGreen: 255,
+    bgBlue: 255
+};
+
+// 量子電路功能
+function handleDrag(ev) {
+    ev.dataTransfer.setData("text", ev.target.dataset.gate);
+    ev.target.style.opacity = '0.5';
+}
+
+function handleDragEnd(ev) {
+    ev.target.style.opacity = '1';
+}
+
+function allowDrop(ev) { 
+    ev.preventDefault(); 
+    const currentGate = ev.currentTarget.getAttribute('data-gate');
+    if (!currentGate) {
+        ev.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+    }
+}
+
+function handleDragLeave(ev) {
+    const currentGate = ev.currentTarget.getAttribute('data-gate');
+    if (!currentGate) {
+        ev.currentTarget.style.background = 'white';
+    }
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    
+    const currentGate = ev.currentTarget.getAttribute('data-gate');
+    if (!currentGate) {
+        ev.currentTarget.style.background = '';
+    }
+    
+    const gate = ev.dataTransfer.getData("text");
+    const td = ev.target.closest('td');
+    if (!td) return;
+    
+    const row = td.parentElement.rowIndex;
+    const col = td.cellIndex;
+    
+    td.style.transform = 'scale(1.1)';
+    setTimeout(() => {
+        td.style.transform = '';
+    }, 200);
+
+    if (gate === "C") {
+        td.innerHTML = gate + '<br>Ctrl:<select class="control-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="simulate()">' + makeQubitOptions() + '</select>';
+        td.setAttribute("data-gate", gate);
+    } else if (gate === "D") {
+        td.innerHTML = gate + '<br>C1:<select class="ctrl1-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>C2:<select class="ctrl2-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="simulate()">' + makeQubitOptions() + '</select>';
+        td.setAttribute("data-gate", gate);
+    } else {
+        td.textContent = gate;
+        td.setAttribute("data-gate", gate);
+    }
+    simulate();
+}
+
+function clearGate(ev) {
+    if (ev.target.tagName === "SELECT" || ev.target.tagName === "OPTION") return;
+    
+    const td = ev.currentTarget;
+    td.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+        td.style.transform = '';
+    }, 150);
+    
+    td.textContent = "";
+    td.setAttribute("data-gate", "");
+    simulate();
+}
+
+function makeQubitOptions() {
+    const nq = +document.getElementById("numQubits").value;
+    return Array.from({length: nq}, (_, i) => `<option value='${i}'>q${i}</option>`).join('');
+}
+
+function renderCircuit() {
+    const nq = +document.getElementById("numQubits").value;
+    const nc = +document.getElementById("numCols").value;
+    const table = document.getElementById("circuitTable");
+    const labels = document.getElementById("qubitLabels");
+    
+    table.innerHTML = "";
+    labels.innerHTML = "";
+    
+    for (let r = 0; r < nq; r++) {
+        const label = document.createElement("div");
+        label.className = "qubit-label";
+        label.textContent = `|q${r}⟩`;
+        labels.appendChild(label);
+    }
+    
+    for (let r = 0; r < nq; r++) {
+        const row = document.createElement("tr");
+        for (let c = 0; c < nc; c++) {
+            const cell = document.createElement("td");
+            cell.setAttribute("data-gate", "");
+            cell.ondrop = drop;
+            cell.ondragover = allowDrop;
+            cell.ondragleave = handleDragLeave;
+            cell.onclick = clearGate;
+            row.appendChild(cell);
+        }
+        table.appendChild(row);
+    }
+    simulate();
+}
+
+// 量子運算
+const H = [[1/Math.sqrt(2),1/Math.sqrt(2)],[1/Math.sqrt(2),-1/Math.sqrt(2)]];
+const X = [[0,1],[1,0]];
+const Y = [[0, math.complex(0, -1)],[math.complex(0, 1), 0]];
+const Z = [[1,0],[0,-1]];
+const I = [[1,0],[0,1]];
+
+function kron(a, b) {
+    const result = [];
+    for (let i = 0; i < a.length; i++) {
+        for (let j = 0; j < b.length; j++) {
+            result.push(a[i].map(x => b[j].map(y => math.multiply(x, y))).flat());
+        }
+    }
+    return result;
+}
+
+function applyGate(state, matrix) {
+    const res = Array(state.length).fill(0).map(_ => math.complex(0, 0));
+    for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix.length; j++) {
+            res[i] = math.add(res[i], math.multiply(matrix[i][j], state[j]));
+        }
+    }
+    return res;
+}
+
+function createCNOT(n, control, target) {
+    const size = 1 << n;
+    const mat = Array.from({ length: size }, () => Array(size).fill(math.complex(0, 0)));
+    for (let i = 0; i < size; i++) {
+        const bit = (i >> (n - 1 - control)) & 1;
+        let j = i;
+        if (bit) j ^= (1 << (n - 1 - target));
+        mat[j][i] = math.complex(1, 0);
+    }
+    return mat;
+}
+
+function createToffoli(n, c1, c2, target) {
+    const size = 1 << n;
+    const mat = Array.from({ length: size }, () => Array(size).fill(math.complex(0, 0)));
+    for (let i = 0; i < size; i++) {
+        const b1 = (i >> (n - 1 - c1)) & 1;
+        const b2 = (i >> (n - 1 - c2)) & 1;
+        let j = i;
+        if (b1 && b2) j ^= (1 << (n - 1 - target));
+        mat[j][i] = math.complex(1, 0);
+    }
+    return mat;
+}
+
+function mapQuantumStateToParameters(state, numQubits) {
+    const nonZeroStates = [];
+    const amplitudes = [];
+    
+    for (let i = 0; i < state.length; i++) {
+        const amplitude = math.abs(state[i]);
+        if (amplitude > 1e-6) {
+            const bin = i.toString(2).padStart(numQubits, '0');
+            nonZeroStates.push({
+                state: bin,
+                amplitude: amplitude,
+                complex: state[i],
+                index: i
+            });
+            amplitudes.push(amplitude);
+        }
+    }
+    
+    if (nonZeroStates.length === 0) return;
+    
+    // 使用量子態振幅來映射到參數
+    const totalAmplitude = amplitudes.reduce((sum, amp) => sum + amp, 0);
+    const weightedSum = nonZeroStates.reduce((sum, s) => sum + s.amplitude * s.index, 0);
+    const maxIndex = Math.max(...nonZeroStates.map(s => s.index));
+    
+    // 映射邏輯：將量子態的特性轉換為繪畫參數
+    quantumParameters.particleCount = Math.floor(500 + (weightedSum / totalAmplitude) * 700);
+    quantumParameters.particleSize = Math.floor(20 + (amplitudes[0] || 0) * 80);
+    quantumParameters.randomColor = Math.floor((weightedSum / maxIndex || 0) * 100);
+    
+    // 使用量子態的相位信息控制顏色
+    const realPart = math.re(nonZeroStates[0]?.complex || math.complex(0, 0));
+    const imagPart = math.im(nonZeroStates[0]?.complex || math.complex(0, 0));
+    
+    quantumParameters.mainRed = Math.floor(Math.abs(realPart) * 255);
+    quantumParameters.mainGreen = Math.floor(Math.abs(imagPart) * 255);
+    quantumParameters.mainBlue = Math.floor((1 - Math.abs(realPart)) * 255);
+    
+    quantumParameters.colorVariation = Math.floor(nonZeroStates.length * 10);
+    quantumParameters.decayRate = 0.95 + (amplitudes[0] || 0) * 0.04;
+    quantumParameters.rotationFactor = (realPart * imagPart) * 0.01;
+    
+    // 使用不同量子態控制陰影
+    if (nonZeroStates.length > 1) {
+        quantumParameters.shadowX = Math.abs(math.re(nonZeroStates[1].complex)) * 10;
+        quantumParameters.shadowY = Math.abs(math.im(nonZeroStates[1].complex)) * 10;
+    }
+    
+    // 背景顏色基於總體量子態分佈
+    const entropy = -nonZeroStates.reduce((sum, s) => {
+        const p = s.amplitude / totalAmplitude;
+        return sum + p * Math.log2(p);
+    }, 0);
+    
+    quantumParameters.bgRed = Math.floor(200 + entropy * 10);
+    quantumParameters.bgGreen = Math.floor(200 + entropy * 10);
+    quantumParameters.bgBlue = Math.floor(200 + entropy * 10);
+    
+    // 更新顯示
+    updateParameterDisplay();
+    
+    // 重新生成粒子
+    if (typeof resetCanvas === 'function') {
+        resetCanvas();
+    }
+}
+
+function updateParameterDisplay() {
+    document.getElementById('particleCountDisplay').textContent = quantumParameters.particleCount;
+    document.getElementById('particleSizeDisplay').textContent = quantumParameters.particleSize;
+    document.getElementById('randomColorDisplay').textContent = quantumParameters.randomColor + '%';
+    document.getElementById('mainColorDisplay').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
+    document.getElementById('colorVariationDisplay').textContent = quantumParameters.colorVariation;
+    document.getElementById('decayRateDisplay').textContent = quantumParameters.decayRate.toFixed(4);
+    document.getElementById('rotationFactorDisplay').textContent = quantumParameters.rotationFactor.toFixed(4);
+    document.getElementById('shadowOffsetDisplay').textContent = `(${quantumParameters.shadowX.toFixed(1)}, ${quantumParameters.shadowY.toFixed(1)})`;
+    document.getElementById('bgColorDisplay').textContent = `(${quantumParameters.bgRed}, ${quantumParameters.bgGreen}, ${quantumParameters.bgBlue})`;
+}
+
+function simulate() {
+    const nq = +document.getElementById("numQubits").value;
+    const table = document.getElementById("circuitTable");
+    if (!table.rows.length) return;
+    
+    const nc = table.rows[0].cells.length;
+    let state = Array(1 << nq).fill(math.complex(0, 0));
+    state[0] = math.complex(1, 0);
+
+    for (let c = 0; c < nc; c++) {
+        let hasCNOT = false;
+        for (let r = 0; r < nq; r++) {
+            const cell = table.rows[r].cells[c];
+            const g = cell.getAttribute("data-gate") || "I";
+            if (g === "C") {
+                const ctrlSel = cell.querySelector(".control-select");
+                const trgtSel = cell.querySelector(".target-select");
+                if (!ctrlSel || !trgtSel) continue;
+                const control = +ctrlSel.value;
+                const target = +trgtSel.value;
+                const U = createCNOT(nq, control, target);
+                state = applyGate(state, U);
+                hasCNOT = true;
+            } else if (g === "D") {
+                const ctrl1Sel = cell.querySelector(".ctrl1-select");
+                const ctrl2Sel = cell.querySelector(".ctrl2-select");
+                const trgtSel = cell.querySelector(".target-select");
+                if (!ctrl1Sel || !ctrl2Sel || !trgtSel) continue;
+                const c1 = +ctrl1Sel.value;
+                const c2 = +ctrl2Sel.value;
+                const target = +trgtSel.value;
+                const U = createToffoli(nq, c1, c2, target);
+                state = applyGate(state, U);
+                hasCNOT = true;
+            }
+        }
+        if (!hasCNOT) {
+            const gates = [];
+            for (let r = 0; r < nq; r++) {
+                const cell = table.rows[r].cells[c];
+                const g = cell.getAttribute("data-gate") || "I";
+                gates.push(({ H, X, Y, Z, I })[g] || I);
+            }
+            const U = gates.reduce((a, b) => kron(a, b));
+            state = applyGate(state, U);
+        }
+    }
+
+    let out = "";
+    const nonZeroStates = [];
+    for (let i = 0; i < state.length; i++) {
+        if (math.abs(state[i]) > 1e-6) {
+            const bin = i.toString(2).padStart(nq, '0');
+            nonZeroStates.push(`${state[i].toString()} |${bin}⟩`);
+        }
+    }
+    
+    if (nonZeroStates.length > 0) {
+        out = nonZeroStates.join('\n');
+    } else {
+        out = "沒有找到顯著的振幅態。";
+    }
+    
+    document.getElementById("output").textContent = out;
+    
+    // 將量子態映射到繪畫參數
+    mapQuantumStateToParameters(state, nq);
+}
+
 let themes = [
 	"d72638-3f88c5-f49d37-140f2d-f22b29-fe4a49-fed766-7fbb8f-009fb7-e6e6ea-fff-102a54".split("-").map(a=>"#"+a),
 	"584d3d-9f956c-cbbf7a-f4e87c-ebf38b-fed766-fff-ffa856-000-e5dede".split("-").map(a=>"#"+a)	,
@@ -171,20 +795,20 @@ class Particle{
 			velocity: createVector(0,0),
 			acceleration: createVector(0,0),
 			radius: random(100),
-			rotationFactor: parseFloat(document.getElementById('rotationFactor').value),
+			rotationFactor: quantumParameters.rotationFactor,
 			particleColor: random(colors),
 			movementSteps: [int(random([2,3,10,20,30,50,120,150])),int(random([2,3,4]))],
-			decayRate: parseFloat(document.getElementById('decayRate').value),
+			decayRate: quantumParameters.decayRate,
 			noiseScale: features.vNoiseScale,
 			secondaryColor: random([255,255,random(colors)]),
 			uniqueId: int(random(10000)),
 			horizontalSpeed: random([6,8,10,12]),
 			verticalSpeed: random([6,8,10,12]),
 			shadowDisplacement: createVector(
-				parseFloat(document.getElementById('shadowX').value),
-				parseFloat(document.getElementById('shadowY').value)
+				quantumParameters.shadowX,
+				quantumParameters.shadowY
 			),
-			colorVariation: parseInt(document.getElementById('colorVariation').value)
+			colorVariation: quantumParameters.colorVariation
 		}
 		Object.assign(def,args)
 		Object.assign(this,def)
@@ -525,28 +1149,21 @@ function preload(){
 
 function setup() {
 	
-	pixelDensity(4)
-	createCanvas(1400,1400);
+	pixelDensity(2)
+	let canvasWidth = window.innerWidth - 650; // 減去左邊面板寬度
+	let canvasHeight = window.innerHeight - 300; // 減去頂部高度
 	
-	// 添加事件監聽器
-	document.getElementById('particleCount').addEventListener('input', updateParticleCount);
-	document.getElementById('particleSize').addEventListener('input', updateParticleSize);
-	document.getElementById('randomColor').addEventListener('input', updateSpecialColor);
-	document.getElementById('mainRed').addEventListener('input', updateColor);
-	document.getElementById('mainGreen').addEventListener('input', updateColor);
-	document.getElementById('mainBlue').addEventListener('input', updateColor);
-	document.getElementById('colorVariation').addEventListener('input', updateColorNoise);
-	document.getElementById('decayRate').addEventListener('input', updateVelocityDecay);
-	document.getElementById('rotationFactor').addEventListener('input', updateRotationSpeed);
-	document.getElementById('shadowX').addEventListener('input', updateShadowOffset);
-	document.getElementById('shadowY').addEventListener('input', updateShadowOffset);
-	document.getElementById('bgRed').addEventListener('input', updateDefaultColor);
-	document.getElementById('bgGreen').addEventListener('input', updateDefaultColor);
-	document.getElementById('bgBlue').addEventListener('input', updateDefaultColor);
-	document.getElementById('resetButton').addEventListener('click', resetParameters);
-
-	// 初始化參數
-	updateAllParameters();
+	// 將 canvas 放入指定的容器中
+	let canvas = createCanvas(canvasWidth, canvasHeight);
+	canvas.parent('canvasWrapper');
+	
+	// 初始化量子電路
+	renderCircuit();
+	
+	// 添加 dragend 事件到所有量子閘
+	document.querySelectorAll('.gate').forEach(gate => {
+		gate.addEventListener('dragend', handleDragEnd);
+	});
 	
 	//prepare texture
 	overallTexture = createGraphics(width,height,WEBGL)
@@ -583,13 +1200,10 @@ function setup() {
 	
 	originalGraphics.noStroke()
 	
-	bgColor=color(random(colors))
+	// 使用量子參數設定背景顏色
+	bgColor = color(quantumParameters.bgRed, quantumParameters.bgGreen, quantumParameters.bgBlue)
 	
-	if (features.style=="normal"){
-		bgColor = color(random(sortedColors))
-	}else{
-		bgColor = color(random(sortedColors.slice(0,2).concat(['#fff']) ))
-	}
+	// 根據風格調整
 	if (features.style=="stroke") bgColor=color(255)
 	if (features.style=="shape") bgColor=color(255)
 	
@@ -618,23 +1232,39 @@ function setup() {
 	
 	// console.log(span,maxSize)
 	//noprotect
-	for(let x=0;x<=width;x+=span){
+	// 使用量子參數控制粒子生成
+	let quantumParticleCount = quantumParameters.particleCount
+	let particleIndex = 0
+	
+	for(let x=0;x<=width && particleIndex < quantumParticleCount;x+=span){
 		if (noise(x/2)<ignorePossibility) continue
 		//noprotect
-		for(let y=0;y<=height;y+=span){
+		for(let y=0;y<=height && particleIndex < quantumParticleCount;y+=span){
 			// if (noise(x,y)<ignorePossibility) continue
 			if (noise(x/gapScale,y/gapScale)<=gapRatio) continue
+			
+			// 決定粒子顏色基於量子參數
+			let particleColor
+			if(random(100) < quantumParameters.randomColor) {
+				particleColor = random(colors)
+			} else {
+				const noise = random(-quantumParameters.colorVariation, quantumParameters.colorVariation)
+				const nr = constrain(quantumParameters.mainRed + noise, 0, 255)
+				const ng = constrain(quantumParameters.mainGreen + noise, 0, 255)
+				const nb = constrain(quantumParameters.mainBlue + noise, 0, 255)
+				particleColor = color(nr, ng, nb)
+			}
+			
 			particles.push(new Particle({
-				position: createVector(x,
-												y),
-				radius: noise(x,y)*maxSize*random(1),
-				particleColor: random(colors)
+				position: createVector(x, y),
+				radius: noise(x,y) * maxSize * random(1) * (quantumParameters.particleSize / 40),
+				particleColor: particleColor
 			}))
 			
 			let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
 			span = spanOptions[pairId]
 			maxSize = maxSizeOptions[pairId]
-			
+			particleIndex++
 		}
 	}
 	
@@ -1107,107 +1737,11 @@ const frag_texture = `
 	}
 `
 
-// 更新函數
-function updateParticleCount(e) {
-    const value = parseInt(e.target.value)
-    document.getElementById('particleCountValue').textContent = value
-    resetCanvas()
-}
-
-function updateParticleSize(e) {
-    const value = parseInt(e.target.value)
-    document.getElementById('particleSizeValue').textContent = value
-    resetCanvas()
-}
-
-function updateSpecialColor(e) {
-    const value = parseInt(e.target.value)
-    document.getElementById('randomColorValue').textContent = value + '%'
-    resetCanvas()
-}
-
-function updateColor(e) {
-    const r = parseInt(document.getElementById('mainRed').value)
-    const g = parseInt(document.getElementById('mainGreen').value)
-    const b = parseInt(document.getElementById('mainBlue').value)
-    document.getElementById('mainRedValue').textContent = r
-    document.getElementById('mainGreenValue').textContent = g
-    document.getElementById('mainBlueValue').textContent = b
-    resetCanvas()
-}
-
-function updateColorNoise(e) {
-    const value = parseInt(e.target.value)
-    document.getElementById('colorVariationValue').textContent = value
-    resetCanvas()
-}
-
-function updateVelocityDecay(e) {
-    const value = parseFloat(e.target.value)
-    document.getElementById('decayRateValue').textContent = value
-    resetCanvas()
-}
-
-function updateRotationSpeed(e) {
-    const value = parseFloat(e.target.value)
-    document.getElementById('rotationFactorValue').textContent = value
-    resetCanvas()
-}
-
-function updateShadowOffset(e) {
-    const x = parseFloat(document.getElementById('shadowX').value)
-    const y = parseFloat(document.getElementById('shadowY').value)
-    document.getElementById('shadowXValue').textContent = x
-    document.getElementById('shadowYValue').textContent = y
-    resetCanvas()
-}
-
-function updateDefaultColor(e) {
-    const r = parseInt(document.getElementById('bgRed').value)
-    const g = parseInt(document.getElementById('bgGreen').value)
-    const b = parseInt(document.getElementById('bgBlue').value)
-    document.getElementById('bgRedValue').textContent = r
-    document.getElementById('bgGreenValue').textContent = g
-    document.getElementById('bgBlueValue').textContent = b
-    
-    // 更新背景顏色
-    bgColor = color(r, g, b)
-    resetCanvas()
-}
-
-function resetParameters() {
-    // 重置所有滑竿到預設值
-    document.getElementById('particleCount').value = 1000;
-    document.getElementById('particleSize').value = 40;
-    document.getElementById('randomColor').value = 38;
-    document.getElementById('mainRed').value = 0;
-    document.getElementById('mainGreen').value = 20;
-    document.getElementById('mainBlue').value = 90;
-    document.getElementById('colorVariation').value = 30;
-    document.getElementById('decayRate').value = 0.9675;
-    document.getElementById('rotationFactor').value = 0.002;
-    document.getElementById('shadowX').value = 3.2;
-    document.getElementById('shadowY').value = 3.2;
-    document.getElementById('bgRed').value = 255;
-    document.getElementById('bgGreen').value = 255;
-    document.getElementById('bgBlue').value = 255;
-    
-    // 觸發所有更新函數
-    updateAllParameters();
-}
-
-function updateAllParameters() {
-    // 觸發所有更新函數
-    updateParticleCount({target: document.getElementById('particleCount')});
-    updateParticleSize({target: document.getElementById('particleSize')});
-    updateSpecialColor({target: document.getElementById('randomColor')});
-    updateColor({target: document.getElementById('mainRed')});
-    updateColorNoise({target: document.getElementById('colorVariation')});
-    updateVelocityDecay({target: document.getElementById('decayRate')});
-    updateRotationSpeed({target: document.getElementById('rotationFactor')});
-    updateShadowOffset({target: document.getElementById('shadowX')});
-    updateDefaultColor({target: document.getElementById('bgRed')});
-}
+// 初始化量子電路
+document.addEventListener('DOMContentLoaded', function() {
+    renderCircuit();
+    updateParameterDisplay();
+});
 
 // 添加重製函數
 function resetCanvas() {
@@ -1229,12 +1763,12 @@ function resetCanvas() {
     let gapScale = random([100,150,200,250])
     let gapRatio = random([0.3,0.35,0.4,0.45,0.5])
     
-    // 獲取當前顏色設置
-    const r = parseInt(document.getElementById('mainRed').value)
-    const g = parseInt(document.getElementById('mainGreen').value)
-    const b = parseInt(document.getElementById('mainBlue').value)
-    const randomColorProb = parseInt(document.getElementById('randomColor').value)
-    const colorVariationValue = parseInt(document.getElementById('colorVariation').value)
+    // 獲取當前量子參數設置
+    const r = quantumParameters.mainRed
+    const g = quantumParameters.mainGreen  
+    const b = quantumParameters.mainBlue
+    const randomColorProb = quantumParameters.randomColor
+    const colorVariationValue = quantumParameters.colorVariation
     
     for(let x=0; x<=width; x+=span){
         if (noise(x/2)<ignorePossibility) continue
