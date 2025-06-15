@@ -1033,6 +1033,11 @@
 
         // 控制功能
         function regenerateCanvas() {
+            console.log('開始重新生成畫布...');
+            
+            // 暫停動畫
+            isPaused = true;
+            
             loadQuantumParameters();
             
             // 清除現有粒子和蟲洞
@@ -1059,88 +1064,106 @@
             features.hasGrid = random() < 0.3;
             features.wormholeCount = random([1, 2, 3, 4, 5]);
             
-            // 重新創建shader（因為fragment shader包含隨機數）
-            const newFrag = `
-                precision highp float;
-
-                uniform vec2 u_resolution;
-                uniform vec2 u_mouse;
-                uniform float u_time;
-                uniform vec3 u_lightDir;
-                uniform vec3 u_col;
-                uniform vec3 u_bgColor;
-                uniform mat3 uNormalMatrix;
-                uniform float u_pixelDensity;
-                uniform sampler2D u_tex;
-                uniform sampler2D u_canvas_tex; 
-
-                varying vec4 var_centerGlPosition;
-                varying vec3 var_vertNormal;
-                varying vec2 var_vertTexCoord;
-
-                ${frag_functions_default}
-
-                void main(){
-                    vec2 st = var_vertTexCoord.xy /u_resolution.xy*u_resolution.y;
-                    st.x*=u_resolution.x/u_resolution.y;
-                    vec2 stBorder =st;
-                    
-                    stBorder.x+=cnoise(vec3(st*1000.,100.))/500.;
-                    stBorder.y+=cnoise(vec3(st*1000.,1000.))/500.; 
-                    
-                    stBorder.x+=cnoise(vec3(st*100.,100.))/500.;
-                    stBorder.y+=cnoise(vec3(st*100.,1000.))/500.; 
-
-                    vec3 canvasOffset = texture2D(u_canvas_tex,st* vec2(u_resolution.x/u_resolution.y,1.)).rgb;
-                    st.x+=0.35/255.- canvasOffset.r/255.*3. ;
-                    st.y+=0.35/255.- canvasOffset.g/255.*3.  ;
-                    
-                    float distortFactor =  0.8;
-                    st.x+=  cnoise(vec3(st*2.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor  ;
-                    st.y+= cnoise(vec3(st*20.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor 
-                                + cnoise(vec3(st/2.,${(Math.random()*1000).toFixed(4)}))/(100.)*distortFactor;
-                    
-                    vec4 texColor0 = texture2D(u_tex,st);
-                    
-                    float offsetColor = 1./300.;
-                    stBorder.x-= texColor0.r*offsetColor;
-                    stBorder.y-=texColor0.g*offsetColor+ texColor0.b*offsetColor;
-                    
-                    vec4 texColor1 = texture2D(u_tex,st);
-                     
-                    vec2 st2 = st;
-                    float brushFactor = 400.;
-                    st2.x+=cnoise(vec3(st*1000.,100.))/brushFactor;
-                    st2.y+=cnoise(vec3(st*1000.,1000.))/brushFactor; 
-             
-                    vec4 texColor2 = texture2D(u_tex,st2);
-                    
-                    float d = distance(vec2(0.5) ,st);  
-                    
-                    float borderWidth = 20.;
-                    bool isBorder = stBorder.x*u_resolution.x<borderWidth
-                    || (1.-stBorder.x)*u_resolution.x<borderWidth 
-                    || stBorder.y*u_resolution.y<borderWidth 
-                    || (1.-stBorder.y)*u_resolution.y<borderWidth;
-                    
-                    vec4 result ;
-                    result = texColor1*0.8 + (texColor1*texColor2/1.9+texColor1/4.+texColor2/4.)/5.;
-                    if ( isBorder){
-                        result.rgb= vec3(u_bgColor);
-                    } else {
-
-                    } 
-                    gl_FragColor =result;	
-                }
-            `;
+            console.log('新特徵設定完成:', features);
             
-            theShader = new p5.Shader(_renderer, vert, newFrag);
+            // 重新創建shader（因為fragment shader包含隨機數）
+            try {
+                const newFrag = `
+                    precision highp float;
+
+                    uniform vec2 u_resolution;
+                    uniform vec2 u_mouse;
+                    uniform float u_time;
+                    uniform vec3 u_lightDir;
+                    uniform vec3 u_col;
+                    uniform vec3 u_bgColor;
+                    uniform mat3 uNormalMatrix;
+                    uniform float u_pixelDensity;
+                    uniform sampler2D u_tex;
+                    uniform sampler2D u_canvas_tex; 
+
+                    varying vec4 var_centerGlPosition;
+                    varying vec3 var_vertNormal;
+                    varying vec2 var_vertTexCoord;
+
+                    ${frag_functions_default}
+
+                    void main(){
+                        vec2 st = var_vertTexCoord.xy /u_resolution.xy*u_resolution.y;
+                        st.x*=u_resolution.x/u_resolution.y;
+                        vec2 stBorder =st;
+                        
+                        stBorder.x+=cnoise(vec3(st*1000.,100.))/500.;
+                        stBorder.y+=cnoise(vec3(st*1000.,1000.))/500.; 
+                        
+                        stBorder.x+=cnoise(vec3(st*100.,100.))/500.;
+                        stBorder.y+=cnoise(vec3(st*100.,1000.))/500.; 
+
+                        vec3 canvasOffset = texture2D(u_canvas_tex,st* vec2(u_resolution.x/u_resolution.y,1.)).rgb;
+                        st.x+=0.35/255.- canvasOffset.r/255.*3. ;
+                        st.y+=0.35/255.- canvasOffset.g/255.*3.  ;
+                        
+                        float distortFactor =  0.8;
+                        st.x+=  cnoise(vec3(st*2.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor  ;
+                        st.y+= cnoise(vec3(st*20.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor 
+                                    + cnoise(vec3(st/2.,${(Math.random()*1000).toFixed(4)}))/(100.)*distortFactor;
+                        
+                        vec4 texColor0 = texture2D(u_tex,st);
+                        
+                        float offsetColor = 1./300.;
+                        stBorder.x-= texColor0.r*offsetColor;
+                        stBorder.y-=texColor0.g*offsetColor+ texColor0.b*offsetColor;
+                        
+                        vec4 texColor1 = texture2D(u_tex,st);
+                         
+                        vec2 st2 = st;
+                        float brushFactor = 400.;
+                        st2.x+=cnoise(vec3(st*1000.,100.))/brushFactor;
+                        st2.y+=cnoise(vec3(st*1000.,1000.))/brushFactor; 
+                 
+                        vec4 texColor2 = texture2D(u_tex,st2);
+                        
+                        float d = distance(vec2(0.5) ,st);  
+                        
+                        float borderWidth = 20.;
+                        bool isBorder = stBorder.x*u_resolution.x<borderWidth
+                        || (1.-stBorder.x)*u_resolution.x<borderWidth 
+                        || stBorder.y*u_resolution.y<borderWidth 
+                        || (1.-stBorder.y)*u_resolution.y<borderWidth;
+                        
+                        vec4 result ;
+                        result = texColor1*0.8 + (texColor1*texColor2/1.9+texColor1/4.+texColor2/4.)/5.;
+                        if ( isBorder){
+                            result.rgb= vec3(u_bgColor);
+                        } else {
+
+                        } 
+                        gl_FragColor =result;	
+                    }
+                `;
+                
+                theShader = createShader(vert, newFrag);
+                console.log('Shader 重新創建成功');
+            } catch (e) {
+                console.error('Shader 創建失敗:', e);
+            }
             
             // 重新創建所有畫布圖形對象
-            overallTexture = createGraphics(width, height, WEBGL);
-            webGLCanvas = createGraphics(width, height, WEBGL);
-            originalGraphics = createGraphics(width, height);
-            overlayGraphics = createGraphics(width, height);
+            try {
+                if (overallTexture) overallTexture.remove();
+                if (webGLCanvas) webGLCanvas.remove();
+                if (originalGraphics) originalGraphics.remove();
+                if (overlayGraphics) overlayGraphics.remove();
+                
+                overallTexture = createGraphics(width, height, WEBGL);
+                webGLCanvas = createGraphics(width, height, WEBGL);
+                originalGraphics = createGraphics(width, height);
+                overlayGraphics = createGraphics(width, height);
+                
+                console.log('所有圖形對象重新創建成功');
+            } catch (e) {
+                console.error('圖形對象創建失敗:', e);
+            }
 
             // 重新設置圖形屬性
             webGLCanvas.noStroke();
@@ -1150,31 +1173,30 @@
             // 重新應用隨機變換
             let rx = random([-0.1, -0.05, 0, 0, 0.05, 0.1]) * width;
             let ry = random([-0.1, -0.05, 0, 0, 0.05, 0.1]) * height;
-            let ra = random([-0.2, -0.1, 0, 0, 0.1, 0.2]);
 
             for (let g of [originalGraphics, overlayGraphics]) {
+                g.push();
                 g.translate(rx, ry);
                 g.translate(width / 2, height / 2);
                 g.scale(random([1, 1.2, 1.5, 2, 3]));
                 g.translate(-width / 2, -height / 2);
+                g.pop();
             }
 
             // 重新設置背景顏色
             bgColor = color(quantumParameters.bgRed, quantumParameters.bgGreen, quantumParameters.bgBlue);
-            if (features.style == "stroke") bgColor = color(255);
+            if (features.style == "stroke") bgColor = color(255);  
             if (features.style == "shape") bgColor = color(255);
             
             // 清除主畫布並重新設置背景
-            background(100);
-            originalGraphics.clear();
-            originalGraphics.background(bgColor);
-            originalGraphics.noStroke();
+            background(bgColor);
             
+            originalGraphics.background(bgColor);
             overlayGraphics.clear();
-            overlayGraphics.background(0, 0);
             
             // 重新初始化粒子
             initializeParticles();
+            console.log('粒子初始化完成，粒子數量:', particles.length);
             
             // 重新創建蟲洞
             for (let i = 0; i < features.wormholeCount; i++) {
@@ -1188,7 +1210,12 @@
                 wormholes.push(w);
             }
             
-            console.log('畫布已重新生成，新樣式:', features.style);
+            console.log('蟲洞創建完成，數量:', wormholes.length);
+            
+            // 重新開始動畫
+            isPaused = false;
+            
+            console.log('畫布重新生成完成！新樣式:', features.style);
         }
 
         function pauseCanvas() {
