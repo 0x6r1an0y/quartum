@@ -734,6 +734,11 @@ function clearGate(ev) {
     }
     
     simulate();
+    
+    // 重整畫布
+    if (typeof resetCanvas === 'function') {
+        resetCanvas();
+    }
 }
 
 function makeQubitOptions() {
@@ -810,6 +815,11 @@ function clearCNOTGate(cell) {
         partnerCell.removeAttribute('data-cnot-partner');
         partnerCell.removeAttribute('data-cnot-col');
         partnerCell.title = '';
+    }
+    
+    // 重整畫布
+    if (typeof resetCanvas === 'function') {
+        resetCanvas();
     }
 }
 
@@ -893,6 +903,11 @@ function clearToffoliGate(cell) {
             currentCell.removeAttribute('data-toffoli-col');
             currentCell.title = '';
         }
+    }
+    
+    // 重整畫布
+    if (typeof resetCanvas === 'function') {
+        resetCanvas();
     }
 }
 

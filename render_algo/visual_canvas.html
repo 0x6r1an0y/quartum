@@ -297,245 +297,87 @@
 
         // 藝術生成相關變數
         let themes = [
-            "d72638-3f88c5-f49d37-140f2d-f22b29-fe4a49-fed766-7fbb8f-009fb7-e6e6ea-fff-102a54".split("-").map(a=>"#"+a),
-            "584d3d-9f956c-cbbf7a-f4e87c-ebf38b-fed766-fff-ffa856-000-e5dede".split("-").map(a=>"#"+a),
-            "0e131f-38405f-59546c-8b939c-ff0035-2c0735-fff".split("-").map(a=>"#"+a)
+            ['#69D2E7', '#A7DBD8', '#E0E4CC', '#F38630', '#FA6900'],
+            ['#FE4365', '#FC9D9A', '#F9CDAD', '#C8C8A9', '#83AF9B'],
+            ['#ECD078', '#D95B43', '#C02942', '#542437', '#53777A'],
+            ['#556270', '#4ECDC4', '#C7F464', '#FF6B6B', '#C44D58'],
+            ['#774F38', '#E08E79', '#F1D4AF', '#ECE5CE', '#C5E0DC'],
+            ['#E8DDCB', '#CDB380', '#036564', '#033649', '#031634'],
+            ['#490A3D', '#BD1550', '#E97F02', '#F8CA00', '#8A9B0F'],
+            ['#594F4F', '#547980', '#45ADA8', '#9DE0AD', '#E5FCC2'],
+            ['#00A0B0', '#6A4C93', '#C73E1D', '#F59D56', '#F2F5A9'],
+            ['#D9CEB2', '#948C75', '#D5DED9', '#7A6A53', '#99B2B7']
         ];
 
-        let features = {};
-        let colors;
-        let particles = [];
-        let wormholes = [];
-        let originalGraphics;
-        let overlayGraphics;
-        let webGLCanvas;
-        let bgColor;
-        let isPaused = false;
-        let theShader, theShaderTexture;
-        let overallTexture;
-        let sortedColors = [];
+        let colors = []
+        let features = {}
+        let overallTexture
+        let bgColor
 
-        // 載入參數
-        function loadQuantumParameters() {
-            const stored = localStorage.getItem('quantumParameters');
-            if (stored) {
-                quantumParameters = JSON.parse(stored);
-                updateParametersDisplay();
-                return true;
-            } else {
-                document.getElementById('loadingIndicator').innerHTML = `
-                    <div class="no-data">
-                        <h3>未找到量子參數</h3>
-                        <p>請先到量子電路控制頁面設定參數</p>
-                        <a href="quantum_control.html" class="control-button" style="display: inline-block; margin-top: 1rem;">
-                            前往控制頁面
-                        </a>
-                    </div>
-                `;
-                return false;
-            }
-        }
-
-        // 更新參數顯示
-        function updateParametersDisplay() {
-            document.getElementById('particleCountStatus').textContent = quantumParameters.particleCount;
-            document.getElementById('particleSizeStatus').textContent = quantumParameters.particleSize;
-            document.getElementById('mainColorStatus').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
-            document.getElementById('rotationFactorStatus').textContent = quantumParameters.rotationFactor.toFixed(4);
-            document.getElementById('decayRateStatus').textContent = quantumParameters.decayRate.toFixed(4);
-        }
-
-        // 粒子類別
         class Particle {
-            constructor(args) {
-                let def = {
-                    position: createVector(0, 0),
-                    lastPosition: createVector(-1, -1),
-                    velocity: createVector(0, 0),
-                    acceleration: createVector(0, 0),
-                    radius: random(100),
-                    rotationFactor: quantumParameters.rotationFactor,
-                    particleColor: random(colors),
-                    movementSteps: [int(random([2, 3, 10, 20, 30, 50, 120, 150])), int(random([2, 3, 4]))],
-                    decayRate: quantumParameters.decayRate,
-                    noiseScale: features.vNoiseScale,
-                    secondaryColor: random([255, 255, random(colors)]),
-                    uniqueId: int(random(10000)),
-                    horizontalSpeed: random([6, 8, 10, 12]),
-                    verticalSpeed: random([6, 8, 10, 12]),
-                    shadowDisplacement: createVector(
-                        quantumParameters.shadowX,
-                        quantumParameters.shadowY
-                    ),
-                    colorVariation: quantumParameters.colorVariation
-                };
-                Object.assign(def, args);
-                Object.assign(this, def);
+            constructor(config) {
+                this.position = config.position;
+                this.velocity = createVector(0, 0);
+                this.acceleration = createVector(0, 0);
+                this.radius = config.radius;
+                this.alive = true;
+                this.particleColor = config.particleColor;
+                this.decayRate = random(0.98, 0.999);
+                
+                this.noiseScale = random(features.vNoiseScale);
+                this.horizontalSpeed = random([-2, -1, -0.5, 0.1, 0.3, 0.5, 1, 2, 3]);
+                this.verticalSpeed = random([-2, -1, -0.5, 0.1, 0.3, 0.5, 1, 2, 3]);
+                this.rotationFactor = random(features.rotateFactors);
+                this.movementSteps = [random([1, 2, 4, 8, 16, 32]), random([1, 2, 4, 8, 16, 32])];
+                this.uniqueId = int(random(100));
+                this.particleColor = config.particleColor;
             }
 
             draw(g) {
-                g.push()
-                let clr = color(this.particleColor)
-                g.fill(clr)
+                g.push();
+                g.translate(this.position.x, this.position.y);
+                g.fill(this.particleColor);
+                g.noStroke();
                 
-                if (noise(this.position.x/50,this.position.y/50)<0.3 && random()<0.35 && features.style=="stroke"){
-                    overlayGraphics.push()
-                        overlayGraphics.noStroke()
-                        overlayGraphics.fill(clr)
-                        overlayGraphics.ellipse(this.position.x+random(-this.radius,this.radius),this.position.y+random(-this.radius,this.radius),random(6)*random()*random(0.5,1))
-                    overlayGraphics.pop()
-                }
-                g.translate(this.position)
-                
-                if (frameCount==1 && this.uniqueId%5==0){
-                    g.strokeWeight(2)
-                    g.stroke(this.secondaryColor)
-                }
-                
-                //test stroke style
-                if (features.style=="stroke" ){
-                    //mountain lines
-                    if ( (this.uniqueId+frameCount)%5==0){
-                        g.push()
-                                g.blendMode(MULTIPLY)
-                                clr.setAlpha(noise(this.uniqueId)*150)
-                                g.translate(-this.position.x,-this.position.y)
-                                let rr = noise(this.uniqueId)*5*noise(this.uniqueId)
-                                g.stroke(clr)
-                                g.strokeWeight(rr)
-                                if (this.lastPosition.x!=-1){
-                                    g.line(this.position.x,this.position.y,this.lastPosition.x,this.lastPosition.y)
-                                }
-                                this.lastPosition = this.position.copy()
-                        g.pop()
+                if (features.style == 'normal') {
+                    g.ellipse(0, 0, this.radius, this.radius);
+                } else if (features.style == 'stroke') {
+                    g.noFill();
+                    g.stroke(this.particleColor);
+                    g.strokeWeight(2);
+                    g.ellipse(0, 0, this.radius, this.radius);
+                } else if (features.style == 'shape') {
+                    g.fill(this.particleColor);
+                    let sides = int(random(3, 8));
+                    g.beginShape();
+                    for (let i = 0; i < sides; i++) {
+                        let angle = TWO_PI * i / sides;
+                        let x = cos(angle) * this.radius / 2;
+                        let y = sin(angle) * this.radius / 2;
+                        g.vertex(x, y);
                     }
-                    if ((this.uniqueId+frameCount)%8==0 && this.uniqueId%(9 + int(50/pow(this.radius/10,3)))<=1){ 
-                        g.push()
-                            g.blendMode(MULTIPLY)
-                            clr.setAlpha(random(255))
-                            g.stroke(clr)
-                            g.strokeWeight(noise(this.position.x/40,this.position.y/40)*2.5*random(0.3,1))
-                            g.rotate(noise(this.position.x/100,this.position.y/100,this.uniqueId)*PI*2)
-                            g.rotate(noise(this.position.x/5,this.position.y/5,this.uniqueId)/2)
-                            if (this.uniqueId%4==0 && brightness(clr)>50){
-                                clr.setAlpha(random(8))
-                                g.fill(clr)
-                                clr.setAlpha(random(150))
-                                g.stroke(clr)
-                                if (random()<0.9){
-                                    g.noStroke()
-                                }
-                                let waterColorScale = noise(this.uniqueId,1000)*5+1
-                                g.arc(0,0,this.radius*waterColorScale,this.radius*waterColorScale,0,PI)
-                            }else{
-                                g.line(0,this.radius/2,this.radius,-this.radius/2)
-                            }
-                        g.pop()
-                    }
+                    g.endShape(CLOSE);
                 }
-                
-                if (features.style=="shape" || features.style=="stroke"){
-                    if (features.style=="shape" || noise(this.position.x/52,this.position.y/52)<0.525){
-                        if (frameCount%40==0){
-                            clr.setAlpha(random(0,1))
-                            g.fill(clr)
-                            g.ellipse(0,0,this.radius,this.radius)
-                        }else if ((this.uniqueId+frameCount)%8==0 && this.uniqueId%(9 + int(50/pow(this.radius/10,3)))<=1){
-                            g.noFill() 
-                            clr.setAlpha(random(200,255))
-                            g.stroke(clr)
-                            g.strokeWeight(random(0,2)*random(0.5,1))
-                            
-                            if (this.uniqueId%88==0 && random()<0.2){
-                                clr.setAlpha(random(100,200))
-                                g.strokeWeight(noise(this.uniqueId*500)*8)
-                            }
-                            
-                            g.blendMode(MULTIPLY)	
-                            if (brightness(clr)>90){
-                                if (random()<0.5){
-                                    g.blendMode(SCREEN)
-                                }
-                            }
 
-                            if (this.uniqueId%2==0 && frameCount%2==0){
-                                clr.setAlpha(random(0,1))
-                                g.fill(clr)
-                                g.noStroke()
-                            }
-                            if (this.uniqueId%10==0 || noise(this.position.x/120,this.position.y/120)<=0.3){
-                                //draw a line
-                                g.rotate(noise(this.position.x*5,this.position.y*5,frameCount/10)*PI*2 )
-                                g.line(0,this.radius,0,-this.radius)
-                            }else{
-                                if (this.uniqueId% 3==0  ){
-                                    clr.setAlpha(random(0,3))
-                                    g.fill(clr)
-                                }
-                                //draw an ellipse
-                                g.ellipse(0,0,this.radius*1.1,this.radius*1.1)
-                            }
-                        }
+                if (features.style == 'normal' && frameCount % 50 == 0 && this.uniqueId % 14 == 0 && random() < 0.6) {
+                    g.push();
+                    let lineSp = random([5, 10, 20, 30, 40]);
+                    let lineCount = random(20);
+                    for (var i = 0; i < random(lineCount); i++) {
+                        let lLan = 5;
+                        g.stroke(0, 100);
+                        g.line(-this.radius - 10 - lLan, -i * lineSp, -this.radius - 10 + lLan, -i * lineSp);
                     }
-                }else if (features.style=="normal"){ 
-                    //fill 
-                    g.ellipse(0,0,this.radius,this.radius)  
+                    g.pop();
                 }
-                
-                //grass
-                if (this.uniqueId%30==0 && frameCount%50==0 && this.radius>1){
-                    g.push()
-                    g.translate(this.radius+20,0)
-                    g.stroke(this.secondaryColor)
-                    g.translate(0,random([-this.radius,this.radius]))
-                    g.line(0,0,0,-5)
-                    g.line(0,0,-3,-5)
-                    g.line(0,0,3,-5)
-                    g.pop()
+
+                if (random() < 0.001 && frameCount % 10 == 0) {
+                    g.stroke(0);
+                    g.noFill();
+                    g.ellipse(0, this.radius + 10, random(this.radius));
                 }
-                
-                let verticalLineSpan = 5
-                if (features.style=="shape") verticalLineSpan = 30
-                if (features.style=="stroke") verticalLineSpan = 35
-                
-                // vertical lines
-                if (this.uniqueId%verticalLineSpan==0){
-                    g.fill(0)
-                    g.ellipse(0,this.radius+10,2,2)
-                }
-                
-                if (this.uniqueId%10==0){
-                    g.fill(bgColor)
-                    g.ellipse(this.radius/2,0,2,2)
-                }
-                if (this.uniqueId%25==0){
-                    g.fill(255)
-                    let whiteR = (noise(this.uniqueId,this.position.x/40,this.position.y/40)*3)+1
-                    g.ellipse(-this.radius-10,this.radius+10,whiteR,whiteR)
-                }
-                if (this.radius>10 && (this.uniqueId+frameCount)%60==0 && this.uniqueId%4==0){
-                    g.fill(this.secondaryColor)
-                    g.ellipse(-this.radius,4,4)
-                } 
-                if (features.style=='normal' && frameCount%50==0 && this.uniqueId%14==0 && random()<0.6){
-                    g.push()
-                    let lineSp = random([5,10,20,30,40])
-                    let lineCount = random(20)
-                    for(var i=0;i<random(lineCount);i++){
-                        let lLan = 5
-                        g.stroke(0,100)
-                        g.line(-this.radius-10-lLan,-i*lineSp,-this.radius-10+lLan,-i*lineSp)
-                    }
-                    g.pop()
-                }
-                
-                if (random()<0.001 && frameCount%10==0){
-                    g.stroke(0)
-                    g.noFill()
-                    g.ellipse(0,this.radius+10,random(this.radius))
-                }
-                
-                g.pop()
+
+                g.pop();
             }
 
             update() {
@@ -543,7 +385,7 @@
                 this.velocity.add(this.acceleration);
                 this.radius *= this.decayRate;
                 this.alive = this.radius > 0.1;
-
+                
                 if (random() < 0.25 && frameCount % 15 == 0 && this.uniqueId % 5 == 0) {
                     this.particleColor = random(colors);
                 }
@@ -577,46 +419,45 @@
             }
         }
 
-        // 蟲洞類別
         class Wormhole {
-            constructor(args) {
-                let def = {
-                    p: createVector(0, 0),
-                    intensity: random([-5, 5]),
-                    r: 500,
-                    rotate: 1,
-                    attract: 1
-                };
-                Object.assign(def, args);
-                Object.assign(this, def);
-            }
-
-            update() {
+            constructor(config) {
+                this.p = config.p;
+                this.r = config.r;
+                this.intensity = config.intensity;
+                this.rotate = config.rotate;
+                this.attract = config.attract;
             }
         }
 
-        // Shader代碼
+        let theShader, theShaderTexture;
+        let webGLCanvas;
+        let originalGraphics;
+        let overlayGraphics;
+        let particles = [];
+        let wormholes = [];
+        let sortedColors = [];
+
         const frag_functions_default = `
-          #define PI 3.141592653589793
-          #define TAU 6.283185307179586
+            #define PI 3.141592653589793
+            #define TAU 6.283185307179586
             
             float rand(vec2 c){
                 return fract(sin(dot(c.xy ,vec2(12.9898,78.233))) * 43758.5453);
             }
 
             mat2 rotate2d(float _angle){
-            return mat2(cos(_angle),-sin(_angle),
-                        sin(_angle),cos(_angle));
+                return mat2(cos(_angle),-sin(_angle),
+                            sin(_angle),cos(_angle));
             }
 
             mat2 scale2d(vec2 _scale){
-                    return mat2(_scale.x,0.0,
-                                    0.0,_scale.y);
+                return mat2(_scale.x,0.0,
+                            0.0,_scale.y);
             }
 
             vec2 tile (vec2 _st, float _zoom) {
-                    _st *= _zoom;
-                    return fract(_st);
+                _st *= _zoom;
+                return fract(_st);
             }
 
             vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
@@ -690,7 +531,7 @@
                 float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
                 return 2.2 * n_xyz;
             }
-            
+
             float noise(vec2 p, float freq ){
                 float unit = 1./freq;
                 vec2 ij = floor(p/unit);
@@ -725,7 +566,7 @@
             }
 
             vec2 random2( vec2 p ) {
-                    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
+                return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
             }
         `;
 
@@ -824,16 +665,64 @@
             ${frag_functions_default}
 
             void main() {
-              vec3 pos = aPosition;
+                vec3 pos = aPosition;
                 
                 vec4 posOut = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1.0);
                 
                 gl_Position = posOut;
 
-              var_vertPos      = pos;
-              var_vertNormal   =  aNormal;
-              var_vertTexCoord = aTexCoord;
+                var_vertPos      = pos;
+                var_vertNormal   =  aNormal;
+                var_vertTexCoord = aTexCoord;
                 var_centerGlPosition = uProjectionMatrix * uModelViewMatrix * vec4(0., 0., 0.,1.0);
+            }
+        `;
+
+        const frag_texture = ` 
+            precision highp float;
+
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            uniform float u_time;
+            uniform vec3 u_lightDir;
+            uniform vec3 u_col;
+            uniform mat3 uNormalMatrix;
+            uniform float u_pixelDensity;
+            uniform sampler2D u_tex; 
+
+            varying vec4 var_centerGlPosition;
+            varying vec3 var_vertNormal;
+            varying vec2 var_vertTexCoord; 
+
+            ${frag_functions_default}
+
+            void main(){
+                vec2 st = var_vertTexCoord.xy /u_resolution.xy*min(u_resolution.x,u_resolution.y);
+                st.x*=u_resolution.x/u_resolution.y;
+                st.x*=u_resolution.x/u_resolution.y;
+                float sc = 1.*u_resolution.x/100.;
+                st*=sc;
+                st*=vec2(3.,1.);
+            
+                vec3 color = vec3(0.);
+                color+=cnoise(vec3(st*20.,10.))/7./3.;
+                color+=cnoise(vec3(st*30.,10.))/9./3.;
+                color+=cnoise(vec3(st*10.,10.))/9./3.;
+            
+                color+=cnoise(vec3(st*200.,10.))/8.;
+                color+=cnoise(vec3(st*300.,10.))/10.;
+                color+=cnoise(vec3(st*100.,10.))/10.;
+            
+                color+=cnoise(vec3(st*200.,10.))/8.;
+                color+=cnoise(vec3(st*300.,10.))/10.;
+                color+=cnoise(vec3(st*100.,10.))/10.;
+                color+=pNoise(st*10.,5)*pNoise(st*10.+2.,10)/2.;
+                color+=pNoise(st*30.,5)*pNoise(st*40.+2.,10)/2.; 
+                color/=2.;
+            
+                color = 1.-color; 
+            
+                gl_FragColor= vec4(color,1.0);
             }
         `;
 
@@ -842,6 +731,7 @@
             sortedColors = colors.sort((a, b) => brightness(color(b)) - brightness(color(a)));
             
             theShader = new p5.Shader(this.renderer, vert, frag);
+            theShaderTexture = new p5.Shader(this.renderer, vert, frag_texture);
             
             features.style = 'normal';
             features.hasBgBorder = random() < 0.5;
@@ -869,9 +759,11 @@
 
             document.getElementById('loadingIndicator').style.display = 'none';
 
-            // 準備texture
             overallTexture = createGraphics(width, height, WEBGL);
-            
+            overallTexture.shader(theShaderTexture);
+            theShaderTexture.setUniform('u_resolution', [width, height]);
+            overallTexture.rect(-width / 2, -height / 2, width, height);
+
             webGLCanvas = createGraphics(width, height, WEBGL);
             originalGraphics = createGraphics(width, height);
             overlayGraphics = createGraphics(width, height);
@@ -898,23 +790,6 @@
             if (features.style == "stroke") bgColor = color(255);
             if (features.style == "shape") bgColor = color(255);
 
-            initializeParticles();
-
-            for (let i = 0; i < features.wormholeCount; i++) {
-                let w = new Wormhole({
-                    p: createVector(random(-width * 0.2, width * 1.2), random(-height * 0.2, height * 1.2)),
-                    r: random(100, 600),
-                    intensity: random([-1, 1]) / 10,
-                    rotate: random([-1, 1]),
-                    attract: random([-1, 1])
-                });
-                wormholes.push(w);
-            }
-        }
-
-        function initializeParticles() {
-            particles = [];
-            
             let pairId = int(random(6));
             let spanOptions = [8, 10, 12, 20, 32, 44, 60, 68];
             let maxSizeOptions = [160, 200, 300, 400, 500, 600, 840, 900];
@@ -928,48 +803,52 @@
             let ignorePossibility = random([0.05, 0.3]);
             let gapScale = random([100, 150, 200, 250]);
             let gapRatio = random([0.3, 0.35, 0.4, 0.45, 0.5]);
-            let panScale = random([0, 1, 2, 5, 10, 15, 20, 25]);
-            let panRatio = random([0, 0, random([0, 5, 10, 15])]);
 
-            // 使用量子參數控制粒子生成
             let quantumParticleCount = quantumParameters.particleCount;
             let particleIndex = 0;
-
+            
             for (let x = 0; x <= width && particleIndex < quantumParticleCount; x += span) {
                 if (noise(x / 2) < ignorePossibility) continue;
-                //noprotect
                 for (let y = 0; y <= height && particleIndex < quantumParticleCount; y += span) {
                     if (noise(x / gapScale, y / gapScale) <= gapRatio) continue;
-
-                    // 決定粒子顏色基於量子參數
+                    
                     let particleColor;
                     if (random(100) < quantumParameters.randomColor) {
                         particleColor = random(colors);
                     } else {
-                        const noise_val = random(-quantumParameters.colorVariation, quantumParameters.colorVariation);
-                        const nr = constrain(quantumParameters.mainRed + noise_val, 0, 255);
-                        const ng = constrain(quantumParameters.mainGreen + noise_val, 0, 255);
-                        const nb = constrain(quantumParameters.mainBlue + noise_val, 0, 255);
+                        const noise = random(-quantumParameters.colorVariation, quantumParameters.colorVariation);
+                        const nr = constrain(quantumParameters.mainRed + noise, 0, 255);
+                        const ng = constrain(quantumParameters.mainGreen + noise, 0, 255);
+                        const nb = constrain(quantumParameters.mainBlue + noise, 0, 255);
                         particleColor = color(nr, ng, nb);
                     }
-
+                    
                     particles.push(new Particle({
                         position: createVector(x, y),
                         radius: noise(x, y) * maxSize * random(1) * (quantumParameters.particleSize / 40),
                         particleColor: particleColor
                     }));
-
+                    
                     let pairId = int(map(noise(x / pairNoiseScale, y / pairNoiseScale), 0, 1, minPairId, maxPairId));
                     span = spanOptions[pairId];
                     maxSize = maxSizeOptions[pairId];
                     particleIndex++;
                 }
             }
+
+            for (let i = 0; i < features.wormholeCount; i++) {
+                let w = new Wormhole({
+                    p: createVector(random(-width * 0.2, width * 1.2), random(-height * 0.2, height * 1.2)),
+                    r: random(100, 600),
+                    intensity: random([-1, 1]) / 10,
+                    rotate: random([-1, 1]),
+                    attract: random([-1, 1])
+                });
+                wormholes.push(w);
+            }
         }
 
         function draw() {
-            if (isPaused) return;
-
             webGLCanvas.shader(theShader);
             theShader.setUniform('u_resolution', [width, height]);
             theShader.setUniform('u_time', millis() / 1000);
@@ -1028,12 +907,103 @@
             }
         }
 
+        // 添加重製函數
+        function resetCanvas() {
+            // 清除現有粒子
+            particles = []
+            
+            // 重新初始化粒子
+            let spanOptions = [8,10,12,20,32,44,60,68]
+            let maxSizeOptions = [160,200,300,400,500,600,840,900]
+            
+            let pairId = int(random(6))
+            let minPairId = 0
+            let maxPairId = random([5,6,7])
+            let span = spanOptions[pairId]
+            let maxSize = maxSizeOptions[pairId]
+            let pairNoiseScale = random([10,20,100,200])
+            
+            let ignorePossibility = random([0.05,0.3])
+            let gapScale = random([100,150,200,250])
+            let gapRatio = random([0.3,0.35,0.4,0.45,0.5])
+            
+            // 獲取當前量子參數設置
+            const r = quantumParameters.mainRed
+            const g = quantumParameters.mainGreen  
+            const b = quantumParameters.mainBlue
+            const randomColorProb = quantumParameters.randomColor
+            const colorVariationValue = quantumParameters.colorVariation
+            
+            for(let x=0; x<=width; x+=span){
+                if (noise(x/2)<ignorePossibility) continue
+                for(let y=0; y<=height; y+=span){
+                    if (noise(x/gapScale,y/gapScale)<=gapRatio) continue
+                    
+                    // 決定粒子顏色
+                    let particleColor
+                    if(random(100) < randomColorProb) {
+                        particleColor = random(colors)
+                    } else {
+                        const noise = random(-colorVariationValue, colorVariationValue)
+                        const nr = constrain(r + noise, 0, 255)
+                        const ng = constrain(g + noise, 0, 255)
+                        const nb = constrain(b + noise, 0, 255)
+                        particleColor = color(nr, ng, nb)
+                    }
+                    
+                    particles.push(new Particle({
+                        position: createVector(x, y),
+                        radius: noise(x,y)*maxSize*random(1),
+                        particleColor: particleColor
+                    }))
+                    
+                    let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
+                    span = spanOptions[pairId]
+                    maxSize = maxSizeOptions[pairId]
+                }
+            }
+        }
+
+        // 下載藝術作品功能
+        function downloadArtwork() {
+            if (typeof saveCanvas !== 'undefined') {
+                // 使用當前時間戳作為文件名
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const filename = `quantum-artwork-${timestamp}`;
+                
+                try {
+                    saveCanvas(filename, 'png');
+                    console.log('藝術作品已下載:', filename);
+                } catch (error) {
+                    console.error('下載失敗:', error);
+                    alert('下載失敗，請確保畫布已完全載入');
+                }
+            } else {
+                // 備用方案：手動創建下載鏈接
+                try {
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        const link = document.createElement('a');
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                        link.download = `quantum-artwork-${timestamp}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        console.log('藝術作品已下載');
+                    } else {
+                        alert('未找到畫布，請確保藝術作品已載入');
+                    }
+                } catch (error) {
+                    console.error('下載失敗:', error);
+                    alert('下載失敗，請重試');
+                }
+            }
+        }
+        
         // 控制功能
         function regenerateCanvas() {
             console.log('開始重新生成畫布...');
-            
-            // 暫停動畫
-            isPaused = true;
             
             loadQuantumParameters();
             
@@ -1046,7 +1016,7 @@
             sortedColors = colors.sort((a, b) => brightness(color(b)) - brightness(color(a)));
             
             // 重新生成藝術特徵
-            features.style = random(['normal', 'stroke', 'shape']);
+            features.style = 'normal';
             features.hasBgBorder = random() < 0.5;
             features.rotateFactors = random([
                 [0],
@@ -1058,88 +1028,15 @@
                 [0.05, 0, 0, 0, 0, 0, 0, -0.05]
             ]);
             features.vNoiseScale = random([40, 50, 75, 100, 120]);
-            features.hasGrid = random() < 0.3;
+            features.hasGrid = false;
             features.wormholeCount = random([1, 2, 3, 4, 5]);
             
             console.log('新特徵設定完成:', features);
             
             // 重新創建shader（因為fragment shader包含隨機數）
             try {
-                const newFrag = `
-                    precision highp float;
-
-                    uniform vec2 u_resolution;
-                    uniform vec2 u_mouse;
-                    uniform float u_time;
-                    uniform vec3 u_lightDir;
-                    uniform vec3 u_col;
-                    uniform vec3 u_bgColor;
-                    uniform mat3 uNormalMatrix;
-                    uniform float u_pixelDensity;
-                    uniform sampler2D u_tex;
-                    uniform sampler2D u_canvas_tex; 
-
-                    varying vec4 var_centerGlPosition;
-                    varying vec3 var_vertNormal;
-                    varying vec2 var_vertTexCoord;
-
-                    ${frag_functions_default}
-
-                    void main(){
-                        vec2 st = var_vertTexCoord.xy /u_resolution.xy*u_resolution.y;
-                        st.x*=u_resolution.x/u_resolution.y;
-                        vec2 stBorder =st;
-                        
-                        stBorder.x+=cnoise(vec3(st*1000.,100.))/500.;
-                        stBorder.y+=cnoise(vec3(st*1000.,1000.))/500.; 
-                        
-                        stBorder.x+=cnoise(vec3(st*100.,100.))/500.;
-                        stBorder.y+=cnoise(vec3(st*100.,1000.))/500.; 
-
-                        vec3 canvasOffset = texture2D(u_canvas_tex,st* vec2(u_resolution.x/u_resolution.y,1.)).rgb;
-                        st.x+=0.35/255.- canvasOffset.r/255.*3. ;
-                        st.y+=0.35/255.- canvasOffset.g/255.*3.  ;
-                        
-                        float distortFactor =  0.8;
-                        st.x+=  cnoise(vec3(st*2.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor  ;
-                        st.y+= cnoise(vec3(st*20.,${(Math.random()*1000).toFixed(4)}))/(30.)*distortFactor 
-                                    + cnoise(vec3(st/2.,${(Math.random()*1000).toFixed(4)}))/(100.)*distortFactor;
-                        
-                        vec4 texColor0 = texture2D(u_tex,st);
-                        
-                        float offsetColor = 1./300.;
-                        stBorder.x-= texColor0.r*offsetColor;
-                        stBorder.y-=texColor0.g*offsetColor+ texColor0.b*offsetColor;
-                        
-                        vec4 texColor1 = texture2D(u_tex,st);
-                         
-                        vec2 st2 = st;
-                        float brushFactor = 400.;
-                        st2.x+=cnoise(vec3(st*1000.,100.))/brushFactor;
-                        st2.y+=cnoise(vec3(st*1000.,1000.))/brushFactor; 
-                 
-                        vec4 texColor2 = texture2D(u_tex,st2);
-                        
-                        float d = distance(vec2(0.5) ,st);  
-                        
-                        float borderWidth = 20.;
-                        bool isBorder = stBorder.x*u_resolution.x<borderWidth
-                        || (1.-stBorder.x)*u_resolution.x<borderWidth 
-                        || stBorder.y*u_resolution.y<borderWidth 
-                        || (1.-stBorder.y)*u_resolution.y<borderWidth;
-                        
-                        vec4 result ;
-                        result = texColor1*0.8 + (texColor1*texColor2/1.9+texColor1/4.+texColor2/4.)/5.;
-                        if ( isBorder){
-                            result.rgb= vec3(u_bgColor);
-                        } else {
-
-                        } 
-                        gl_FragColor =result;	
-                    }
-                `;
-                
-                theShader = createShader(vert, newFrag);
+                theShader = new p5.Shader(this.renderer, vert, frag);
+                theShaderTexture = new p5.Shader(this.renderer, vert, frag_texture);
                 console.log('Shader 重新創建成功');
             } catch (e) {
                 console.error('Shader 創建失敗:', e);
@@ -1153,6 +1050,10 @@
                 if (overlayGraphics) overlayGraphics.remove();
                 
                 overallTexture = createGraphics(width, height, WEBGL);
+                overallTexture.shader(theShaderTexture);
+                theShaderTexture.setUniform('u_resolution', [width, height]);
+                overallTexture.rect(-width / 2, -height / 2, width, height);
+                
                 webGLCanvas = createGraphics(width, height, WEBGL);
                 originalGraphics = createGraphics(width, height);
                 overlayGraphics = createGraphics(width, height);
@@ -1172,12 +1073,10 @@
             let ry = random([-0.1, -0.05, 0, 0, 0.05, 0.1]) * height;
 
             for (let g of [originalGraphics, overlayGraphics]) {
-                g.push();
                 g.translate(rx, ry);
                 g.translate(width / 2, height / 2);
                 g.scale(random([1, 1.2, 1.5, 2, 3]));
                 g.translate(-width / 2, -height / 2);
-                g.pop();
             }
 
             // 重新設置背景顏色
@@ -1186,13 +1085,11 @@
             if (features.style == "shape") bgColor = color(255);
             
             // 清除主畫布並重新設置背景
-            background(bgColor);
+            background(100);
+            originalGraphics.noStroke();
             
-            originalGraphics.background(bgColor);
-            overlayGraphics.clear();
-            
-            // 重新初始化粒子
-            initializeParticles();
+            // 使用重置函數重新初始化粒子
+            resetCanvas();
             console.log('粒子初始化完成，粒子數量:', particles.length);
             
             // 重新創建蟲洞
@@ -1209,18 +1106,45 @@
             
             console.log('蟲洞創建完成，數量:', wormholes.length);
             
-            // 重新開始動畫
-            isPaused = false;
-            
             console.log('畫布重新生成完成！新樣式:', features.style);
         }
 
         function pauseCanvas() {
-            isPaused = !isPaused;
+            // 不再使用 isPaused，因為與verybbpaint.html保持一致
         }
 
         function downloadCanvas() {
-            saveCanvas('quantum-art-' + Date.now(), 'png');
+            downloadArtwork();
+        }
+
+        // 載入參數
+        function loadQuantumParameters() {
+            const stored = localStorage.getItem('quantumParameters');
+            if (stored) {
+                quantumParameters = JSON.parse(stored);
+                updateParametersDisplay();
+                return true;
+            } else {
+                document.getElementById('loadingIndicator').innerHTML = `
+                    <div class="no-data">
+                        <h3>未找到量子參數</h3>
+                        <p>請先到量子電路控制頁面設定參數</p>
+                        <a href="quantum_control.html" class="control-button" style="display: inline-block; margin-top: 1rem;">
+                            前往控制頁面
+                        </a>
+                    </div>
+                `;
+                return false;
+            }
+        }
+
+        // 更新參數顯示
+        function updateParametersDisplay() {
+            document.getElementById('particleCountStatus').textContent = quantumParameters.particleCount;
+            document.getElementById('particleSizeStatus').textContent = quantumParameters.particleSize;
+            document.getElementById('mainColorStatus').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
+            document.getElementById('rotationFactorStatus').textContent = quantumParameters.rotationFactor.toFixed(4);
+            document.getElementById('decayRateStatus').textContent = quantumParameters.decayRate.toFixed(4);
         }
 
         // 初始化
