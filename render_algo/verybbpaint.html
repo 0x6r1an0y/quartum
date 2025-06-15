@@ -874,6 +874,7 @@ function setToffoliGate(col, control1Qubit, control2Qubit, targetQubit) {
         control1Cell.classList.add('toffoli-control1');
         control1Cell.setAttribute('data-gate', 'D');
         control1Cell.setAttribute('data-toffoli-role', 'control1');
+        control1Cell.setAttribute('data-toffoli-control1', control1Qubit);
         control1Cell.setAttribute('data-toffoli-control2', control2Qubit);
         control1Cell.setAttribute('data-toffoli-target', targetQubit);
         control1Cell.setAttribute('data-toffoli-col', col);
@@ -888,6 +889,7 @@ function setToffoliGate(col, control1Qubit, control2Qubit, targetQubit) {
         control2Cell.setAttribute('data-gate', 'D');
         control2Cell.setAttribute('data-toffoli-role', 'control2');
         control2Cell.setAttribute('data-toffoli-control1', control1Qubit);
+        control2Cell.setAttribute('data-toffoli-control2', control2Qubit);
         control2Cell.setAttribute('data-toffoli-target', targetQubit);
         control2Cell.setAttribute('data-toffoli-col', col);
         control2Cell.textContent = '●';
