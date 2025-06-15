@@ -23,6 +23,27 @@
             flex-direction: column;
         }
 
+        .navigation {
+            text-align: center;
+            padding: 1rem 2rem 0;
+        }
+
+        .nav-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
         .header {
             text-align: center;
             padding: 2rem;
@@ -350,6 +371,10 @@
     </style>
 </head>
 <body>
+    <div class="navigation fade-in">
+        <a href="index.html" class="nav-link">← 回到首頁</a>
+    </div>
+
     <div class="header fade-in">
         <h1>量子視覺藝術化專案</h1>
         <p>透過量子電路控制視覺生成參數，創造獨特的量子藝術作品</p>
