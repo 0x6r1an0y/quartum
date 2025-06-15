@@ -282,38 +282,23 @@
             position: relative;
         }
         
-        .cnot-control::after {
-            content: "●";
+        .cnot-control {
             font-size: 1.5rem;
             font-weight: bold;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .cnot-target::after {
-            content: "⊕";
+        .cnot-target {
             font-size: 1.5rem;
             font-weight: bold;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .cnot-line {
-            position: absolute;
-            background: #0891b2;
-            z-index: 5;
-            pointer-events: none;
-        }
-        
-        .cnot-line.vertical {
-            width: 3px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
+
 
         .qubit-labels {
             display: flex;
@@ -651,9 +636,21 @@ function drop(ev) {
     }, 200);
 
     if (gate === "C") {
-        td.innerHTML = 'CNOT<br>Ctrl:<select class="control-select" onchange="updateCNOT(this)">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="updateCNOT(this)">' + makeQubitOptions() + '</select>';
-        td.setAttribute("data-gate", gate);
-        td.setAttribute("data-col", col);
+        // CNOT門需要選擇控制位和目標位
+        const controlQubit = prompt("請選擇控制位 (0-" + (+document.getElementById("numQubits").value - 1) + "):");
+        const targetQubit = prompt("請選擇目標位 (0-" + (+document.getElementById("numQubits").value - 1) + "):");
+        
+        if (controlQubit === null || targetQubit === null || 
+            controlQubit === targetQubit || 
+            isNaN(controlQubit) || isNaN(targetQubit) ||
+            controlQubit < 0 || targetQubit < 0 ||
+            controlQubit >= +document.getElementById("numQubits").value ||
+            targetQubit >= +document.getElementById("numQubits").value) {
+            return; // 取消或輸入無效
+        }
+        
+        // 設置CNOT門占據兩個格子
+        setCNOTGate(col, parseInt(controlQubit), parseInt(targetQubit));
     } else if (gate === "D") {
         td.innerHTML = gate + '<br>C1:<select class="ctrl1-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>C2:<select class="ctrl2-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="simulate()">' + makeQubitOptions() + '</select>';
         td.setAttribute("data-gate", gate);
@@ -673,22 +670,19 @@ function clearGate(ev) {
         td.style.transform = '';
     }, 150);
     
-    // 如果是CNOT門，清除視覺效果
-    if (td.getAttribute("data-gate") === "C") {
-        const col = parseInt(td.getAttribute("data-col"));
-        if (!isNaN(col)) {
-            clearCNOTDisplay(col);
-        }
+    // 如果是CNOT門，需要特殊處理
+    if (td.getAttribute("data-gate") === "C" && td.hasAttribute("data-cnot-role")) {
+        clearCNOTGate(td);
+    } else {
+        // 普通門的清除
+        td.textContent = "";
+        td.setAttribute("data-gate", "");
+        td.removeAttribute("data-col");
+        
+        // 清除可能的CNOT相關樣式
+        td.classList.remove('cnot-control', 'cnot-target');
     }
     
-    // 清除所有CNOT相關樣式
-    td.classList.remove('cnot-control', 'cnot-target');
-    const lines = td.querySelectorAll('.cnot-line');
-    lines.forEach(line => line.remove());
-    
-    td.textContent = "";
-    td.setAttribute("data-gate", "");
-    td.removeAttribute("data-col");
     simulate();
 }
 
@@ -697,84 +691,75 @@ function makeQubitOptions() {
     return Array.from({length: nq}, (_, i) => `<option value='${i}'>q${i}</option>`).join('');
 }
 
-function updateCNOT(selectElement) {
-    const td = selectElement.closest('td');
-    const col = parseInt(td.getAttribute('data-col'));
-    const controlSelect = td.querySelector('.control-select');
-    const targetSelect = td.querySelector('.target-select');
+function setCNOTGate(col, controlQubit, targetQubit) {
+    const table = document.getElementById("circuitTable");
+    const rows = table.querySelectorAll('tr');
     
-    if (!controlSelect || !targetSelect) return;
-    
-    const controlQubit = parseInt(controlSelect.value);
-    const targetQubit = parseInt(targetSelect.value);
-    
-    if (controlQubit === targetQubit) {
-        // 如果控制位和目標位相同，重置
-        clearCNOTDisplay(col);
-        simulate();
+    // 檢查指定位置是否已經有門
+    if (rows[controlQubit] && rows[controlQubit].cells[col] && 
+        rows[controlQubit].cells[col].getAttribute('data-gate') !== '') {
+        alert(`位置 (q${controlQubit}, col${col}) 已經有量子門！`);
         return;
     }
     
-    // 清除之前的CNOT顯示
-    clearCNOTDisplay(col);
+    if (rows[targetQubit] && rows[targetQubit].cells[col] && 
+        rows[targetQubit].cells[col].getAttribute('data-gate') !== '') {
+        alert(`位置 (q${targetQubit}, col${col}) 已經有量子門！`);
+        return;
+    }
     
-    // 設置新的CNOT顯示
-    setCNOTDisplay(col, controlQubit, targetQubit);
+    // 設置控制位格子
+    if (rows[controlQubit] && rows[controlQubit].cells[col]) {
+        const controlCell = rows[controlQubit].cells[col];
+        controlCell.classList.add('cnot-control');
+        controlCell.setAttribute('data-gate', 'C');
+        controlCell.setAttribute('data-cnot-role', 'control');
+        controlCell.setAttribute('data-cnot-partner', targetQubit);
+        controlCell.setAttribute('data-cnot-col', col);
+        controlCell.textContent = '●';
+        controlCell.title = `CNOT控制位 → q${targetQubit}`;
+    }
+    
+    // 設置目標位格子
+    if (rows[targetQubit] && rows[targetQubit].cells[col]) {
+        const targetCell = rows[targetQubit].cells[col];
+        targetCell.classList.add('cnot-target');
+        targetCell.setAttribute('data-gate', 'C');
+        targetCell.setAttribute('data-cnot-role', 'target');
+        targetCell.setAttribute('data-cnot-partner', controlQubit);
+        targetCell.setAttribute('data-cnot-col', col);
+        targetCell.textContent = '⊕';
+        targetCell.title = `CNOT目標位 ← q${controlQubit}`;
+    }
     
     simulate();
 }
 
-function clearCNOTDisplay(col) {
+function clearCNOTGate(cell) {
+    const col = parseInt(cell.getAttribute('data-cnot-col'));
+    const partner = parseInt(cell.getAttribute('data-cnot-partner'));
     const table = document.getElementById("circuitTable");
     const rows = table.querySelectorAll('tr');
     
-    // 清除所有CNOT相關的類和線條
-    rows.forEach((row, rowIndex) => {
-        const cell = row.cells[col];
-        if (cell) {
-            cell.classList.remove('cnot-control', 'cnot-target');
-            // 清除連接線
-            const lines = cell.querySelectorAll('.cnot-line');
-            lines.forEach(line => line.remove());
-        }
-    });
-}
-
-function setCNOTDisplay(col, controlQubit, targetQubit) {
-    const table = document.getElementById("circuitTable");
-    const rows = table.querySelectorAll('tr');
+    // 清除當前格子
+    cell.classList.remove('cnot-control', 'cnot-target');
+    cell.textContent = '';
+    cell.setAttribute('data-gate', '');
+    cell.removeAttribute('data-cnot-role');
+    cell.removeAttribute('data-cnot-partner');
+    cell.removeAttribute('data-cnot-col');
+    cell.title = '';
     
-    const minQubit = Math.min(controlQubit, targetQubit);
-    const maxQubit = Math.max(controlQubit, targetQubit);
-    
-    // 設置控制位和目標位的樣式
-    if (rows[controlQubit] && rows[controlQubit].cells[col]) {
-        const controlCell = rows[controlQubit].cells[col];
-        controlCell.classList.add('cnot-control');
-        controlCell.title = `CNOT控制位 (q${controlQubit})`;
-    }
-    
-    if (rows[targetQubit] && rows[targetQubit].cells[col]) {
-        const targetCell = rows[targetQubit].cells[col];
-        targetCell.classList.add('cnot-target');
-        targetCell.title = `CNOT目標位 (q${targetQubit})`;
-    }
-    
-    // 在控制位和目標位之間繪製連接線
-    if (rows[minQubit] && rows[minQubit].cells[col]) {
-        const startCell = rows[minQubit].cells[col];
-        const line = document.createElement('div');
-        line.className = 'cnot-line vertical';
-        
-        // 計算線條的高度和位置
-        const cellHeight = 60; // td的高度
-        const lineHeight = (maxQubit - minQubit + 1) * (cellHeight + 8) - 8; // 考慮border-spacing
-        
-        line.style.height = lineHeight + 'px';
-        line.style.top = '0px';
-        
-        startCell.style.position = 'relative';
-        startCell.appendChild(line);
+    // 清除夥伴格子
+    if (rows[partner] && rows[partner].cells[col]) {
+        const partnerCell = rows[partner].cells[col];
+        partnerCell.classList.remove('cnot-control', 'cnot-target');
+        partnerCell.textContent = '';
+        partnerCell.setAttribute('data-gate', '');
+        partnerCell.removeAttribute('data-cnot-role');
+        partnerCell.removeAttribute('data-cnot-partner');
+        partnerCell.removeAttribute('data-cnot-col');
+        partnerCell.title = '';
     }
 }
 
@@ -808,17 +793,7 @@ function renderCircuit() {
         table.appendChild(row);
     }
     
-    // 重新渲染所有已存在的CNOT門
-    setTimeout(() => {
-        const cnotCells = table.querySelectorAll('td[data-gate="C"]');
-        cnotCells.forEach(cell => {
-            const controlSelect = cell.querySelector('.control-select');
-            const targetSelect = cell.querySelector('.target-select');
-            if (controlSelect && targetSelect && controlSelect.value !== targetSelect.value) {
-                updateCNOT(controlSelect);
-            }
-        });
-    }, 10);
+
     
     simulate();
 }
@@ -1052,18 +1027,25 @@ function simulate() {
 
     for (let c = 0; c < nc; c++) {
         let hasCNOT = false;
+        let processedCNOT = new Set(); // 避免重複處理同一個CNOT門
+        
         for (let r = 0; r < nq; r++) {
             const cell = table.rows[r].cells[c];
             const g = cell.getAttribute("data-gate") || "I";
-            if (g === "C") {
-                const ctrlSel = cell.querySelector(".control-select");
-                const trgtSel = cell.querySelector(".target-select");
-                if (!ctrlSel || !trgtSel) continue;
-                const control = +ctrlSel.value;
-                const target = +trgtSel.value;
-                const U = createCNOT(nq, control, target);
-                state = applyGate(state, U);
-                hasCNOT = true;
+            if (g === "C" && cell.hasAttribute("data-cnot-role")) {
+                const cnotCol = cell.getAttribute("data-cnot-col");
+                const role = cell.getAttribute("data-cnot-role");
+                const partner = parseInt(cell.getAttribute("data-cnot-partner"));
+                
+                // 只在控制位處理CNOT門，避免重複
+                if (role === "control" && !processedCNOT.has(`${cnotCol}-${r}-${partner}`)) {
+                    const control = r;
+                    const target = partner;
+                    const U = createCNOT(nq, control, target);
+                    state = applyGate(state, U);
+                    hasCNOT = true;
+                    processedCNOT.add(`${cnotCol}-${r}-${partner}`);
+                }
             } else if (g === "D") {
                 const ctrl1Sel = cell.querySelector(".ctrl1-select");
                 const ctrl2Sel = cell.querySelector(".ctrl2-select");
@@ -1082,7 +1064,12 @@ function simulate() {
             for (let r = 0; r < nq; r++) {
                 const cell = table.rows[r].cells[c];
                 const g = cell.getAttribute("data-gate") || "I";
-                gates.push(({ H, X, Y, Z, S, I })[g] || I);
+                // 跳過CNOT門的格子，因為它們已經在上面處理過了
+                if (g === "C" && cell.hasAttribute("data-cnot-role")) {
+                    gates.push(I); // CNOT門的格子用單位矩陣
+                } else {
+                    gates.push(({ H, X, Y, Z, S, I })[g] || I);
+                }
             }
             const U = gates.reduce((a, b) => kron(a, b));
             state = applyGate(state, U);
