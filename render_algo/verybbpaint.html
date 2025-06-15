@@ -97,6 +97,35 @@
             position: relative;
         }
 
+        .canvas-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+        }
+
+        .download-button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(245, 158, 11, 0.4);
+        }
+
+        .download-button:active {
+            transform: translateY(0);
+        }
+
         canvas {
             background: transparent !important;
             position: relative !important;
@@ -484,6 +513,11 @@
         </div>
 
         <div class="canvas-container">
+            <div class="canvas-controls">
+                <button class="download-button" onclick="downloadArtwork()">
+                    下載藝術作品
+                </button>
+            </div>
             <div id="canvasWrapper"></div>
         </div>
     </div>
@@ -1968,6 +2002,43 @@ function resetCanvas() {
             let pairId = int(map(noise(x/pairNoiseScale,y/pairNoiseScale),0,1,minPairId,maxPairId))
             span = spanOptions[pairId]
             maxSize = maxSizeOptions[pairId]
+        }
+    }
+}
+
+// 下載藝術作品功能
+function downloadArtwork() {
+    if (typeof saveCanvas !== 'undefined') {
+        // 使用當前時間戳作為文件名
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filename = `quantum-artwork-${timestamp}`;
+        
+        try {
+            saveCanvas(filename, 'png');
+            console.log('藝術作品已下載:', filename);
+        } catch (error) {
+            console.error('下載失敗:', error);
+            alert('下載失敗，請確保畫布已完全載入');
+        }
+    } else {
+        // 備用方案：手動創建下載鏈接
+        try {
+            const canvas = document.querySelector('canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                link.download = `quantum-artwork-${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log('藝術作品已下載');
+            } else {
+                alert('未找到畫布，請確保藝術作品已載入');
+            }
+        } catch (error) {
+            console.error('下載失敗:', error);
+            alert('下載失敗，請重試');
         }
     }
 }
