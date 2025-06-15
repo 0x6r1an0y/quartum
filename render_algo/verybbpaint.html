@@ -298,6 +298,39 @@
             justify-content: center;
         }
         
+        .toffoli-control1 {
+            background: linear-gradient(135deg, #ec4899, #db2777) !important;
+            color: white !important;
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toffoli-control2 {
+            background: linear-gradient(135deg, #db2777, #be185d) !important;
+            color: white !important;
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toffoli-target {
+            background: linear-gradient(135deg, #be185d, #9d174d) !important;
+            color: white !important;
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
 
 
         .qubit-labels {
@@ -652,8 +685,22 @@ function drop(ev) {
         // 設置CNOT門占據兩個格子
         setCNOTGate(col, parseInt(controlQubit), parseInt(targetQubit));
     } else if (gate === "D") {
-        td.innerHTML = gate + '<br>C1:<select class="ctrl1-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>C2:<select class="ctrl2-select" onchange="simulate()">' + makeQubitOptions() + '</select><br>Trgt:<select class="target-select" onchange="simulate()">' + makeQubitOptions() + '</select>';
-        td.setAttribute("data-gate", gate);
+        // Toffoli門需要選擇兩個控制位和一個目標位
+        const numQubits = +document.getElementById("numQubits").value;
+        const control1Qubit = prompt("請選擇第一個控制位 (0-" + (numQubits - 1) + "):");
+        const control2Qubit = prompt("請選擇第二個控制位 (0-" + (numQubits - 1) + "):");
+        const targetQubit = prompt("請選擇目標位 (0-" + (numQubits - 1) + "):");
+        
+        if (control1Qubit === null || control2Qubit === null || targetQubit === null || 
+            control1Qubit === control2Qubit || control1Qubit === targetQubit || control2Qubit === targetQubit ||
+            isNaN(control1Qubit) || isNaN(control2Qubit) || isNaN(targetQubit) ||
+            control1Qubit < 0 || control2Qubit < 0 || targetQubit < 0 ||
+            control1Qubit >= numQubits || control2Qubit >= numQubits || targetQubit >= numQubits) {
+            return; // 取消或輸入無效
+        }
+        
+        // 設置Toffoli門占據三個格子
+        setToffoliGate(col, parseInt(control1Qubit), parseInt(control2Qubit), parseInt(targetQubit));
     } else {
         td.textContent = gate;
         td.setAttribute("data-gate", gate);
@@ -673,14 +720,17 @@ function clearGate(ev) {
     // 如果是CNOT門，需要特殊處理
     if (td.getAttribute("data-gate") === "C" && td.hasAttribute("data-cnot-role")) {
         clearCNOTGate(td);
+    } else if (td.getAttribute("data-gate") === "D" && td.hasAttribute("data-toffoli-role")) {
+        // 如果是Toffoli門，需要特殊處理
+        clearToffoliGate(td);
     } else {
         // 普通門的清除
         td.textContent = "";
         td.setAttribute("data-gate", "");
         td.removeAttribute("data-col");
         
-        // 清除可能的CNOT相關樣式
-        td.classList.remove('cnot-control', 'cnot-target');
+        // 清除可能的量子門相關樣式
+        td.classList.remove('cnot-control', 'cnot-target', 'toffoli-control1', 'toffoli-control2', 'toffoli-target');
     }
     
     simulate();
@@ -760,6 +810,89 @@ function clearCNOTGate(cell) {
         partnerCell.removeAttribute('data-cnot-partner');
         partnerCell.removeAttribute('data-cnot-col');
         partnerCell.title = '';
+    }
+}
+
+function setToffoliGate(col, control1Qubit, control2Qubit, targetQubit) {
+    const table = document.getElementById("circuitTable");
+    const rows = table.querySelectorAll('tr');
+    
+    // 檢查指定位置是否已經有門
+    const positions = [control1Qubit, control2Qubit, targetQubit];
+    for (const pos of positions) {
+        if (rows[pos] && rows[pos].cells[col] && 
+            rows[pos].cells[col].getAttribute('data-gate') !== '') {
+            alert(`位置 (q${pos}, col${col}) 已經有量子門！`);
+            return;
+        }
+    }
+    
+    // 設置第一個控制位格子
+    if (rows[control1Qubit] && rows[control1Qubit].cells[col]) {
+        const control1Cell = rows[control1Qubit].cells[col];
+        control1Cell.classList.add('toffoli-control1');
+        control1Cell.setAttribute('data-gate', 'D');
+        control1Cell.setAttribute('data-toffoli-role', 'control1');
+        control1Cell.setAttribute('data-toffoli-control2', control2Qubit);
+        control1Cell.setAttribute('data-toffoli-target', targetQubit);
+        control1Cell.setAttribute('data-toffoli-col', col);
+        control1Cell.textContent = '●';
+        control1Cell.title = `Toffoli控制位1 → q${targetQubit} (與q${control2Qubit})`;
+    }
+    
+    // 設置第二個控制位格子
+    if (rows[control2Qubit] && rows[control2Qubit].cells[col]) {
+        const control2Cell = rows[control2Qubit].cells[col];
+        control2Cell.classList.add('toffoli-control2');
+        control2Cell.setAttribute('data-gate', 'D');
+        control2Cell.setAttribute('data-toffoli-role', 'control2');
+        control2Cell.setAttribute('data-toffoli-control1', control1Qubit);
+        control2Cell.setAttribute('data-toffoli-target', targetQubit);
+        control2Cell.setAttribute('data-toffoli-col', col);
+        control2Cell.textContent = '●';
+        control2Cell.title = `Toffoli控制位2 → q${targetQubit} (與q${control1Qubit})`;
+    }
+    
+    // 設置目標位格子
+    if (rows[targetQubit] && rows[targetQubit].cells[col]) {
+        const targetCell = rows[targetQubit].cells[col];
+        targetCell.classList.add('toffoli-target');
+        targetCell.setAttribute('data-gate', 'D');
+        targetCell.setAttribute('data-toffoli-role', 'target');
+        targetCell.setAttribute('data-toffoli-control1', control1Qubit);
+        targetCell.setAttribute('data-toffoli-control2', control2Qubit);
+        targetCell.setAttribute('data-toffoli-col', col);
+        targetCell.textContent = '⊕';
+        targetCell.title = `Toffoli目標位 ← q${control1Qubit} & q${control2Qubit}`;
+    }
+    
+    simulate();
+}
+
+function clearToffoliGate(cell) {
+    const col = parseInt(cell.getAttribute('data-toffoli-col'));
+    const table = document.getElementById("circuitTable");
+    const rows = table.querySelectorAll('tr');
+    
+    // 在同一列中找到所有屬於Toffoli門的格子
+    for (let r = 0; r < rows.length; r++) {
+        const currentCell = rows[r].cells[col];
+        if (currentCell && 
+            currentCell.getAttribute('data-gate') === 'D' && 
+            currentCell.hasAttribute('data-toffoli-role') &&
+            parseInt(currentCell.getAttribute('data-toffoli-col')) === col) {
+            
+            // 清除這個格子
+            currentCell.classList.remove('toffoli-control1', 'toffoli-control2', 'toffoli-target');
+            currentCell.textContent = '';
+            currentCell.setAttribute('data-gate', '');
+            currentCell.removeAttribute('data-toffoli-role');
+            currentCell.removeAttribute('data-toffoli-control1');
+            currentCell.removeAttribute('data-toffoli-control2');
+            currentCell.removeAttribute('data-toffoli-target');
+            currentCell.removeAttribute('data-toffoli-col');
+            currentCell.title = '';
+        }
     }
 }
 
@@ -1028,6 +1161,7 @@ function simulate() {
     for (let c = 0; c < nc; c++) {
         let hasCNOT = false;
         let processedCNOT = new Set(); // 避免重複處理同一個CNOT門
+        let processedToffoli = new Set(); // 避免重複處理同一個Toffoli門
         
         for (let r = 0; r < nq; r++) {
             const cell = table.rows[r].cells[c];
@@ -1046,17 +1180,20 @@ function simulate() {
                     hasCNOT = true;
                     processedCNOT.add(`${cnotCol}-${r}-${partner}`);
                 }
-            } else if (g === "D") {
-                const ctrl1Sel = cell.querySelector(".ctrl1-select");
-                const ctrl2Sel = cell.querySelector(".ctrl2-select");
-                const trgtSel = cell.querySelector(".target-select");
-                if (!ctrl1Sel || !ctrl2Sel || !trgtSel) continue;
-                const c1 = +ctrl1Sel.value;
-                const c2 = +ctrl2Sel.value;
-                const target = +trgtSel.value;
-                const U = createToffoli(nq, c1, c2, target);
-                state = applyGate(state, U);
-                hasCNOT = true;
+            } else if (g === "D" && cell.hasAttribute("data-toffoli-role")) {
+                const toffoliCol = cell.getAttribute("data-toffoli-col");
+                const role = cell.getAttribute("data-toffoli-role");
+                const control1 = parseInt(cell.getAttribute("data-toffoli-control1"));
+                const control2 = parseInt(cell.getAttribute("data-toffoli-control2"));
+                const target = parseInt(cell.getAttribute("data-toffoli-target"));
+                
+                // 只在第一個控制位處理Toffoli門，避免重複
+                if (role === "control1" && !processedToffoli.has(`${toffoliCol}-${control1}-${control2}-${target}`)) {
+                    const U = createToffoli(nq, control1, control2, target);
+                    state = applyGate(state, U);
+                    hasCNOT = true;
+                    processedToffoli.add(`${toffoliCol}-${control1}-${control2}-${target}`);
+                }
             }
         }
         if (!hasCNOT) {
@@ -1064,9 +1201,10 @@ function simulate() {
             for (let r = 0; r < nq; r++) {
                 const cell = table.rows[r].cells[c];
                 const g = cell.getAttribute("data-gate") || "I";
-                // 跳過CNOT門的格子，因為它們已經在上面處理過了
-                if (g === "C" && cell.hasAttribute("data-cnot-role")) {
-                    gates.push(I); // CNOT門的格子用單位矩陣
+                // 跳過CNOT門和Toffoli門的格子，因為它們已經在上面處理過了
+                if ((g === "C" && cell.hasAttribute("data-cnot-role")) || 
+                    (g === "D" && cell.hasAttribute("data-toffoli-role"))) {
+                    gates.push(I); // 多位門的格子用單位矩陣
                 } else {
                     gates.push(({ H, X, Y, Z, S, I })[g] || I);
                 }
