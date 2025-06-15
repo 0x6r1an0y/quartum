@@ -216,6 +216,7 @@
         td[data-gate="X"] { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
         td[data-gate="Y"] { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         td[data-gate="Z"] { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+        td[data-gate="S"] { background: linear-gradient(135deg, #14b8a6, #0f766e); color: white; }
         td[data-gate="C"] { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
         td[data-gate="D"] { background: linear-gradient(135deg, #ec4899, #db2777); color: white; }
 
@@ -311,10 +312,19 @@
 
         .param-item {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            padding: 0.25rem 0;
+            flex-direction: column;
+            margin-bottom: 0.8rem;
+            padding: 0.5rem;
             border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+        }
+
+        .param-item > div:first-child {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
         }
 
         .param-label {
@@ -325,6 +335,17 @@
         .param-value {
             color: #6b7280;
             font-family: monospace;
+        }
+
+        .param-source {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-style: italic;
+            background: rgba(248, 250, 252, 0.8);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border-left: 3px solid #e5e7eb;
+            margin-top: 0.25rem;
         }
     </style>
 </head>
@@ -354,6 +375,7 @@
                     <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="X" title="Pauli-X Gate">X</div>
                     <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="Y" title="Pauli-Y Gate">Y</div>
                     <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="Z" title="Pauli-Z Gate">Z</div>
+                    <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="S" title="Phase Gate (S Gate)">S</div>
                     <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="C" title="CNOT Gate">C</div>
                     <div class="gate" draggable="true" ondragstart="handleDrag(event)" data-gate="D" title="Toffoli Gate">D</div>
                 </div>
@@ -376,40 +398,61 @@
                 <div class="output-title">繪畫參數</div>
                 <div id="parametersDisplay">
                     <div class="param-item">
-                        <span class="param-label">粒子數量:</span>
-                        <span class="param-value" id="particleCountDisplay">1000</span>
+                        <div>
+                            <span class="param-label">粒子數量:</span>
+                            <span class="param-value" id="particleCountDisplay">1000</span>
+                        </div>
+                        <div class="param-source" id="particleCountSource">初始值</div>
                     </div>
                     <div class="param-item">
-                        <span class="param-label">粒子尺寸係數:</span>
-                        <span class="param-value" id="particleSizeDisplay">40</span>
+                        <div>
+                            <span class="param-label">粒子尺寸係數:</span>
+                            <span class="param-value" id="particleSizeDisplay">40</span>
+                        </div>
+                        <div class="param-source" id="particleSizeSource">初始值</div>
+                    </div>
+
+                    <div class="param-item">
+                        <div>
+                            <span class="param-label">主色調 (R,G,B):</span>
+                            <span class="param-value" id="mainColorDisplay">(0, 20, 90)</span>
+                        </div>
+                        <div class="param-source" id="mainColorSource">初始值</div>
                     </div>
                     <div class="param-item">
-                        <span class="param-label">隨機色彩比例:</span>
-                        <span class="param-value" id="randomColorDisplay">38%</span>
+                        <div>
+                            <span class="param-label">色彩變化幅度:</span>
+                            <span class="param-value" id="colorVariationDisplay">30</span>
+                        </div>
+                        <div class="param-source" id="colorVariationSource">初始值</div>
                     </div>
                     <div class="param-item">
-                        <span class="param-label">主色調 (R,G,B):</span>
-                        <span class="param-value" id="mainColorDisplay">(0, 20, 90)</span>
+                        <div>
+                            <span class="param-label">粒子衰減率:</span>
+                            <span class="param-value" id="decayRateDisplay">0.9675</span>
+                        </div>
+                        <div class="param-source" id="decayRateSource">初始值</div>
                     </div>
                     <div class="param-item">
-                        <span class="param-label">色彩變化幅度:</span>
-                        <span class="param-value" id="colorVariationDisplay">30</span>
+                        <div>
+                            <span class="param-label">旋轉因子:</span>
+                            <span class="param-value" id="rotationFactorDisplay">0.002</span>
+                        </div>
+                        <div class="param-source" id="rotationFactorSource">初始值</div>
                     </div>
                     <div class="param-item">
-                        <span class="param-label">粒子衰減率:</span>
-                        <span class="param-value" id="decayRateDisplay">0.9675</span>
+                        <div>
+                            <span class="param-label">陰影位移 (X,Y):</span>
+                            <span class="param-value" id="shadowOffsetDisplay">(3.2, 3.2)</span>
+                        </div>
+                        <div class="param-source" id="shadowOffsetSource">初始值</div>
                     </div>
                     <div class="param-item">
-                        <span class="param-label">旋轉因子:</span>
-                        <span class="param-value" id="rotationFactorDisplay">0.002</span>
-                    </div>
-                    <div class="param-item">
-                        <span class="param-label">陰影位移 (X,Y):</span>
-                        <span class="param-value" id="shadowOffsetDisplay">(3.2, 3.2)</span>
-                    </div>
-                    <div class="param-item">
-                        <span class="param-label">背景色 (R,G,B):</span>
-                        <span class="param-value" id="bgColorDisplay">(255, 255, 255)</span>
+                        <div>
+                            <span class="param-label">背景色 (R,G,B):</span>
+                            <span class="param-value" id="bgColorDisplay">(255, 255, 255)</span>
+                        </div>
+                        <div class="param-source" id="bgColorSource">初始值</div>
                     </div>
                 </div>
             </div>
@@ -439,6 +482,23 @@ let quantumParameters = {
     bgRed: 255,
     bgGreen: 255,
     bgBlue: 255
+};
+
+// 參數計算來源記錄
+let parameterSources = {
+    particleCount: "初始值",
+    particleSize: "初始值", 
+    mainRed: "初始值",
+    mainGreen: "初始值",
+    mainBlue: "初始值",
+    colorVariation: "初始值",
+    decayRate: "初始值",
+    rotationFactor: "初始值",
+    shadowX: "初始值",
+    shadowY: "初始值",
+    bgRed: "初始值",
+    bgGreen: "初始值",
+    bgBlue: "初始值"
 };
 
 // 量子電路功能
@@ -555,6 +615,7 @@ const H = [[1/Math.sqrt(2),1/Math.sqrt(2)],[1/Math.sqrt(2),-1/Math.sqrt(2)]];
 const X = [[0,1],[1,0]];
 const Y = [[0, math.complex(0, -1)],[math.complex(0, 1), 0]];
 const Z = [[1,0],[0,-1]];
+const S = [[1,0],[0, math.complex(0, 1)]]; // Phase gate (S gate)
 const I = [[1,0],[0,1]];
 
 function kron(a, b) {
@@ -627,27 +688,71 @@ function mapQuantumStateToParameters(state, numQubits) {
     const weightedSum = nonZeroStates.reduce((sum, s) => sum + s.amplitude * s.index, 0);
     const maxIndex = Math.max(...nonZeroStates.map(s => s.index));
     
-    // 映射邏輯：將量子態的特性轉換為繪畫參數
+    // 映射邏輯：將量子態的特性轉換為繪畫參數，並記錄計算來源
     quantumParameters.particleCount = Math.floor(500 + (weightedSum / totalAmplitude) * 700);
+    parameterSources.particleCount = `加權和(${weightedSum.toFixed(3)}) / 總振幅(${totalAmplitude.toFixed(3)})`;
+    
     quantumParameters.particleSize = Math.floor(20 + (amplitudes[0] || 0) * 80);
-    quantumParameters.randomColor = Math.floor((weightedSum / maxIndex || 0) * 100);
+    parameterSources.particleSize = `第一態振幅: ${(amplitudes[0] || 0).toFixed(3)} (|${nonZeroStates[0]?.state || '000'}⟩)`;
     
-    // 使用量子態的相位信息控制顏色
-    const realPart = math.re(nonZeroStates[0]?.complex || math.complex(0, 0));
-    const imagPart = math.im(nonZeroStates[0]?.complex || math.complex(0, 0));
+    quantumParameters.randomColor = 50;
     
-    quantumParameters.mainRed = Math.floor(Math.abs(realPart) * 255);
-    quantumParameters.mainGreen = Math.floor(Math.abs(imagPart) * 255);
-    quantumParameters.mainBlue = Math.floor((1 - Math.abs(realPart)) * 255);
+    // 使用HSV色彩空間來控制主色調
+    const firstAmplitude = amplitudes[0] || 0;
+    const secondAmplitude = amplitudes[1] || 0;
+    const firstComplex = nonZeroStates[0]?.complex || math.complex(0, 0);
+    
+    // 計算HSV值
+    // H (色調): 使用第一個量子態的相位角度 (0-360度)
+    const phase = math.arg(firstComplex); // 相位角度 (-π 到 π)
+    const hue = ((phase + Math.PI) / (2 * Math.PI)) * 360; // 轉換到0-360度
+    
+    // S (飽和度): 使用第一個量子態的振幅 (0-1)
+    const saturation = firstAmplitude;
+    
+    // V (明度): 使用第二個量子態的振幅，如果沒有第二態則使用0.8
+    const value = nonZeroStates[1] ? secondAmplitude : 0.8;
+    
+    // 將HSV轉換為RGB
+    const rgb = hsvToRgb(hue, saturation, value);
+    
+    quantumParameters.mainRed = Math.floor(rgb.r);
+    quantumParameters.mainGreen = Math.floor(rgb.g);
+    quantumParameters.mainBlue = Math.floor(rgb.b);
+    
+    parameterSources.mainRed = `HSV轉RGB - H:${hue.toFixed(1)}° S:${saturation.toFixed(3)} V:${value.toFixed(3)}`;
+    parameterSources.mainGreen = `色調來自第一態相位: ${phase.toFixed(3)}rad (|${nonZeroStates[0]?.state || '000'}⟩)`;
+    parameterSources.mainBlue = nonZeroStates[1] ? 
+        `飽和度=${saturation.toFixed(3)}, 明度來自第二態: ${value.toFixed(3)} (|${nonZeroStates[1].state}⟩)` : 
+        `飽和度=${saturation.toFixed(3)}, 明度預設: ${value.toFixed(3)}`;
     
     quantumParameters.colorVariation = Math.floor(nonZeroStates.length * 10);
+    parameterSources.colorVariation = `非零態數量: ${nonZeroStates.length}`;
+    
     quantumParameters.decayRate = 0.95 + (amplitudes[0] || 0) * 0.04;
-    quantumParameters.rotationFactor = (realPart * imagPart) * 0.01;
+    parameterSources.decayRate = `0.95 + 第一態振幅(${(amplitudes[0] || 0).toFixed(3)}) × 0.04`;
+    
+    // 使用第一態和第二態振幅的乘積控制旋轉因子
+    quantumParameters.rotationFactor = nonZeroStates[1] ? 
+        (firstAmplitude * secondAmplitude) * 0.01 :
+        (firstAmplitude * firstAmplitude) * 0.01;
+    parameterSources.rotationFactor = nonZeroStates[1] ? 
+        `第一態振幅(${firstAmplitude.toFixed(3)}) × 第二態振幅(${secondAmplitude.toFixed(3)}) × 0.01` :
+        `僅一個非零態，使用振幅平方: ${firstAmplitude.toFixed(3)}² × 0.01`;
     
     // 使用不同量子態控制陰影
     if (nonZeroStates.length > 1) {
-        quantumParameters.shadowX = Math.abs(math.re(nonZeroStates[1].complex)) * 10;
-        quantumParameters.shadowY = Math.abs(math.im(nonZeroStates[1].complex)) * 10;
+        const shadowRealPart = math.re(nonZeroStates[1].complex);
+        const shadowImagPart = math.im(nonZeroStates[1].complex);
+        
+        quantumParameters.shadowX = Math.abs(shadowRealPart) * 10;
+        parameterSources.shadowX = `第二態實部絕對值: ${Math.abs(shadowRealPart).toFixed(3)} (|${nonZeroStates[1].state}⟩)`;
+        
+        quantumParameters.shadowY = Math.abs(shadowImagPart) * 10;
+        parameterSources.shadowY = `第二態虛部絕對值: ${Math.abs(shadowImagPart).toFixed(3)} (|${nonZeroStates[1].state}⟩)`;
+    } else {
+        parameterSources.shadowX = "僅一個非零態，使用預設值";
+        parameterSources.shadowY = "僅一個非零態，使用預設值";
     }
     
     // 背景顏色基於總體量子態分佈
@@ -659,6 +764,9 @@ function mapQuantumStateToParameters(state, numQubits) {
     quantumParameters.bgRed = Math.floor(200 + entropy * 10);
     quantumParameters.bgGreen = Math.floor(200 + entropy * 10);
     quantumParameters.bgBlue = Math.floor(200 + entropy * 10);
+    parameterSources.bgRed = `熵值: ${entropy.toFixed(3)}`;
+    parameterSources.bgGreen = `熵值: ${entropy.toFixed(3)}`;
+    parameterSources.bgBlue = `熵值: ${entropy.toFixed(3)}`;
     
     // 更新顯示
     updateParameterDisplay();
@@ -669,16 +777,55 @@ function mapQuantumStateToParameters(state, numQubits) {
     }
 }
 
+// HSV到RGB的轉換函數
+function hsvToRgb(h, s, v) {
+    h = h / 60; // 將色調轉換到0-6範圍
+    const c = v * s; // 彩度
+    const x = c * (1 - Math.abs((h % 2) - 1));
+    const m = v - c;
+    
+    let r, g, b;
+    
+    if (h >= 0 && h < 1) {
+        r = c; g = x; b = 0;
+    } else if (h >= 1 && h < 2) {
+        r = x; g = c; b = 0;
+    } else if (h >= 2 && h < 3) {
+        r = 0; g = c; b = x;
+    } else if (h >= 3 && h < 4) {
+        r = 0; g = x; b = c;
+    } else if (h >= 4 && h < 5) {
+        r = x; g = 0; b = c;
+    } else {
+        r = c; g = 0; b = x;
+    }
+    
+    return {
+        r: Math.round((r + m) * 255),
+        g: Math.round((g + m) * 255),
+        b: Math.round((b + m) * 255)
+    };
+}
+
 function updateParameterDisplay() {
     document.getElementById('particleCountDisplay').textContent = quantumParameters.particleCount;
     document.getElementById('particleSizeDisplay').textContent = quantumParameters.particleSize;
-    document.getElementById('randomColorDisplay').textContent = quantumParameters.randomColor + '%';
     document.getElementById('mainColorDisplay').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
     document.getElementById('colorVariationDisplay').textContent = quantumParameters.colorVariation;
     document.getElementById('decayRateDisplay').textContent = quantumParameters.decayRate.toFixed(4);
     document.getElementById('rotationFactorDisplay').textContent = quantumParameters.rotationFactor.toFixed(4);
     document.getElementById('shadowOffsetDisplay').textContent = `(${quantumParameters.shadowX.toFixed(1)}, ${quantumParameters.shadowY.toFixed(1)})`;
     document.getElementById('bgColorDisplay').textContent = `(${quantumParameters.bgRed}, ${quantumParameters.bgGreen}, ${quantumParameters.bgBlue})`;
+    
+    // 更新參數來源顯示
+    document.getElementById('particleCountSource').textContent = parameterSources.particleCount;
+    document.getElementById('particleSizeSource').textContent = parameterSources.particleSize;
+    document.getElementById('mainColorSource').textContent = `R: ${parameterSources.mainRed} | G: ${parameterSources.mainGreen} | B: ${parameterSources.mainBlue}`;
+    document.getElementById('colorVariationSource').textContent = parameterSources.colorVariation;
+    document.getElementById('decayRateSource').textContent = parameterSources.decayRate;
+    document.getElementById('rotationFactorSource').textContent = parameterSources.rotationFactor;
+    document.getElementById('shadowOffsetSource').textContent = `X: ${parameterSources.shadowX} | Y: ${parameterSources.shadowY}`;
+    document.getElementById('bgColorSource').textContent = parameterSources.bgRed;
 }
 
 function simulate() {
@@ -722,7 +869,7 @@ function simulate() {
             for (let r = 0; r < nq; r++) {
                 const cell = table.rows[r].cells[c];
                 const g = cell.getAttribute("data-gate") || "I";
-                gates.push(({ H, X, Y, Z, I })[g] || I);
+                gates.push(({ H, X, Y, Z, S, I })[g] || I);
             }
             const U = gates.reduce((a, b) => kron(a, b));
             state = applyGate(state, U);
