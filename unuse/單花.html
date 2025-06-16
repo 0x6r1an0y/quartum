@@ -34,8 +34,8 @@
             position: fixed !important;
             left: 340px !important;  /* 控制面板寬度 + 間距 */
             top: 0 !important;
-            width: calc(100vw - 340px) !important;
-            height: 100vh !important;
+            width: 1300px !important;  /* 固定畫布寬度 */
+            height: 1300px !important;  /* 固定畫布高度 */
         }
 
         .control-group {
@@ -530,9 +530,9 @@ function setup() {
 	randomSeed(5)
 	noiseSeed(49)
 	
-	// 使用 windowWidth 和 windowHeight 來設定畫布大小
-	createCanvas(windowWidth - 340, windowHeight);
-	webGLCanvas = createGraphics(width, height, WEBGL)
+	// 使用固定畫布大小
+	createCanvas(1000, 1000);
+	webGLCanvas = createGraphics(width+200, height+20, WEBGL)
 	originalGraphics = createGraphics(width, height)
 	noStroke()
 
@@ -566,85 +566,14 @@ function setup() {
 	updateControlValues();
 }
 
-// 在 script 標籤開始處添加防抖函數
-let resizeTimeout;
-let isResizing = false;
-
-// 防抖函數
-function debounce(func, wait) {
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(resizeTimeout);
-            func(...args);
-        };
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(later, wait);
-    };
-}
-
-// 清空所有畫布和粒子
-function clearAll() {
-    // 清空粒子陣列
-    particles = [];
-    
-    // 清空所有畫布
-    if (webGLCanvas) {
-        webGLCanvas.clear();
-    }
-    if (originalGraphics) {
-        originalGraphics.clear();
-        originalGraphics.background(0, 0, 0);
-    }
-    clear();
-    background(100);
-}
-
-// 修改視窗大小改變的處理函數
-const handleResize = debounce(() => {
-    if (isResizing) return;
-    isResizing = true;
-    
-    // 清空所有內容
-    clearAll();
-    
-    // 延遲重新初始化
-    setTimeout(() => {
-        // 重新設定畫布大小
-        resizeCanvas(windowWidth - 340, windowHeight);
-        
-        // 重新設定 WebGL 畫布大小
-        webGLCanvas.resizeCanvas(width, height);
-        originalGraphics.resizeCanvas(width, height);
-        
-        // 重新設定繪圖參數
-        originalGraphics.background(0, 0, 0);
-        originalGraphics.translate(width / 2, height / 2);
-        originalGraphics.translate(-width / 2, -height / 2);
-        originalGraphics.strokeWeight(0.2);
-        originalGraphics.drawingContext.shadowColor = color(0, 95);
-        originalGraphics.drawingContext.shadowOffsetX = controls.shadowOffsetX;
-        originalGraphics.drawingContext.shadowOffsetY = controls.shadowOffsetY;
-        originalGraphics.drawingContext.shadowBlur = 1;
-        
-        // 重新生成粒子
-        resetParticles();
-        
-        isResizing = false;
-    }, 250); // 250ms 延遲
-}, 100); // 100ms 防抖時間
-
-// 修改 windowResized 函數
-function windowResized() {
-    handleResize();
-}
-
 function draw() {
 	webGLCanvas.shader(theShader)
 	theShader.setUniform('u_resolution', [width / 1000, height / 1000])
 	theShader.setUniform('u_time', millis() / 1000)
 	theShader.setUniform('u_mouse', [mouseX / width, mouseY / height])
 	theShader.setUniform('u_tex', originalGraphics)
-	webGLCanvas.rotate(controls.rotationSpeed)
+	// 移除旋轉動畫
+	// webGLCanvas.rotate(controls.rotationSpeed)
 	webGLCanvas.clear()
 
 	webGLCanvas.rect(-width / 2, -height / 2, width, height)

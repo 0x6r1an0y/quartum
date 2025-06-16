@@ -774,13 +774,44 @@
             }
         });
 
+        // 防抖機制變數
+        let reloadTimeout = null;
+        let lastReloadTime = 0;
+        const RELOAD_COOLDOWN = 1000; // 1秒冷卻時間
+
         // 新增：監聽父頁面傳來的參數
         window.addEventListener('message', function(event) {
             if (event.data && event.data.type === 'quantumParameters') {
-                localStorage.setItem('quantumParameters', JSON.stringify(event.data.data));
-                // 立即重載參數並重繪
-                loadQuantumParameters();
-                location.reload();
+                console.log('油畫畫布收到參數更新:', event.data);
+                const newParameters = event.data.data;
+                
+                // 更新量子參數
+                Object.keys(newParameters).forEach(key => {
+                    if (newParameters[key] !== undefined) {
+                        quantumParameters[key] = newParameters[key];
+                    }
+                });
+                
+                // 保存到localStorage
+                localStorage.setItem('quantumParameters', JSON.stringify(quantumParameters));
+                
+                // 使用防抖機制重新載入頁面
+                const currentTime = Date.now();
+                if (currentTime - lastReloadTime > RELOAD_COOLDOWN) {
+                    // 清除之前的 timeout
+                    if (reloadTimeout) {
+                        clearTimeout(reloadTimeout);
+                    }
+                    
+                    // 設置新的 timeout
+                    reloadTimeout = setTimeout(() => {
+                        console.log('油畫畫布參數已更新，重新載入頁面');
+                        lastReloadTime = Date.now();
+                        location.reload();
+                    }, 100); // 100ms 防抖延遲
+                } else {
+                    console.log('忽略參數更新，冷卻時間內');
+                }
             }
         });
 

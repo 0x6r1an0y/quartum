@@ -263,10 +263,8 @@
         <div class="canvas-container fade-in">
             <div class="canvas-selector">
                 <select id="canvasSelector" class="canvas-select">
-                    <option value="paint_algo.html">量子藝術畫布</option>
+                    <option value="paint_algo.html">油畫藝術畫布</option>
                     <option value="flower_algo.html">花朵藝術畫布</option>
-                    <option value="placeholder1.html" disabled>未來畫布選項 1</option>
-                    <option value="placeholder2.html" disabled>未來畫布選項 2</option>
                 </select>
             </div>
             <iframe id="canvasOnlyFrame" src="paint_algo.html" style="width:100%;height:calc(100vh - 100px);border:none;border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,0.2);"></iframe>
@@ -338,14 +336,94 @@
             bgBlue: 255
         };
 
+        // 避免重複發送參數的標記
+        let lastSentParameters = null;
+        let currentCanvasType = null;
+        
+        // 防抖機制變數
+        let sendTimeout = null;
+        let lastSendTime = 0;
+        const SEND_COOLDOWN = 500; // 500ms 冷卻時間
+
         // iframe 參數同步
         function sendQuantumParametersToIframe() {
             const iframe = document.getElementById('canvasOnlyFrame');
+            const selector = document.getElementById('canvasSelector');
+            const currentCanvas = selector.value;
+            
             if (iframe && iframe.contentWindow) {
-                iframe.contentWindow.postMessage({
-                    type: 'quantumParameters',
-                    data: quantumParameters
-                }, '*');
+                let convertedParameters = quantumParameters;
+                
+                // 根據不同畫布類型轉換參數
+                if (currentCanvas === 'flower_algo.html') {
+                    // 花朵畫布的參數轉換 - 使用單花.html的參數格式
+                    convertedParameters = {
+                        // 基本粒子參數
+                        particleCount: Math.floor(quantumParameters.particleCount / 2),
+                        particleSize: Math.max(5, Math.floor(quantumParameters.particleSize / 2)),
+                        specialColorChance: Math.floor(quantumParameters.randomColor / 2),
+                        
+                        // 顏色參數
+                        redValue: quantumParameters.mainRed,
+                        greenValue: quantumParameters.mainGreen,
+                        blueValue: quantumParameters.mainBlue,
+                        colorNoise: quantumParameters.colorVariation,
+                        
+                        // 物理參數
+                        velocityDecay: quantumParameters.decayRate,
+                        rotationSpeed: quantumParameters.rotationFactor,
+                        shadowOffsetX: quantumParameters.shadowX,
+                        shadowOffsetY: quantumParameters.shadowY,
+                        
+                        // 背景顏色
+                        defaultRed: quantumParameters.bgRed,
+                        defaultGreen: quantumParameters.bgGreen,
+                        defaultBlue: quantumParameters.bgBlue,
+                        
+                        // 星星形狀參數（基於量子參數計算）
+                        starPoints: Math.max(3, Math.min(12, Math.floor(quantumParameters.particleCount / 100))),
+                        starAmplitude: Math.max(0.05, Math.min(0.3, quantumParameters.rotationFactor * 10)),
+                        //minRadius: Math.max(0.05, Math.min(0.2, quantumParameters.decayRate - 0.8)),
+                        //maxRadius: Math.max(0.2, Math.min(0.5, quantumParameters.decayRate - 0.5)),
+                        minRadius: 0.1,
+                        maxRadius: 0.3,
+                        
+                        // 保留原始參數以供參考
+                        originalParameters: quantumParameters
+                    };
+                } else if (currentCanvas === 'paint_algo.html') {
+                    // 量子藝術畫布保持原始參數
+                    convertedParameters = quantumParameters;
+                }
+                
+                // 檢查是否需要發送參數（避免重複發送）
+                const parametersKey = JSON.stringify(convertedParameters);
+                const currentTime = Date.now();
+                
+                if ((lastSentParameters !== parametersKey || currentCanvasType !== currentCanvas) && 
+                    currentTime - lastSendTime > SEND_COOLDOWN) {
+                    
+                    // 清除之前的 timeout
+                    if (sendTimeout) {
+                        clearTimeout(sendTimeout);
+                    }
+                    
+                    // 設置新的 timeout
+                    sendTimeout = setTimeout(() => {
+                        iframe.contentWindow.postMessage({
+                            type: 'quantumParameters',
+                            data: convertedParameters
+                        }, '*');
+                        
+                        lastSentParameters = parametersKey;
+                        currentCanvasType = currentCanvas;
+                        lastSendTime = Date.now();
+                        
+                        console.log(`發送參數到 ${currentCanvas}:`, convertedParameters);
+                    }, 50); // 50ms 防抖延遲
+                } else if (currentTime - lastSendTime <= SEND_COOLDOWN) {
+                    console.log('忽略參數發送，冷卻時間內');
+                }
             }
         }
 
@@ -360,6 +438,15 @@
                     // 保存選擇到localStorage
                     localStorage.setItem('selectedCanvas', selectedValue);
                     
+                    // 重置參數標記和防抖機制
+                    lastSentParameters = null;
+                    currentCanvasType = null;
+                    lastSendTime = 0;
+                    if (sendTimeout) {
+                        clearTimeout(sendTimeout);
+                        sendTimeout = null;
+                    }
+                    
                     // 更新iframe的src
                     iframe.src = selectedValue;
                     
@@ -370,8 +457,11 @@
                     // iframe載入完成後恢復透明度
                     iframe.onload = function() {
                         iframe.style.opacity = '1';
-                        // 載入完成後傳遞參數
-                        setTimeout(sendQuantumParametersToIframe, 500);
+                        // 載入完成後傳遞參數並更新顯示
+                        setTimeout(() => {
+                            updateParametersDisplay();
+                            sendQuantumParametersToIframe();
+                        }, 500);
                     };
                 }
             });
@@ -411,11 +501,38 @@
 
         // 更新參數顯示
         function updateParametersDisplay() {
-            document.getElementById('particleCountStatus').textContent = quantumParameters.particleCount;
-            document.getElementById('particleSizeStatus').textContent = quantumParameters.particleSize;
-            document.getElementById('mainColorStatus').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
-            document.getElementById('rotationFactorStatus').textContent = quantumParameters.rotationFactor.toFixed(4);
-            document.getElementById('decayRateStatus').textContent = quantumParameters.decayRate.toFixed(4);
+            const selector = document.getElementById('canvasSelector');
+            const currentCanvas = selector.value;
+            
+            if (currentCanvas === 'flower_algo.html') {
+                // 顯示花朵畫布的參數
+                document.getElementById('particleCountStatus').textContent = Math.floor(quantumParameters.particleCount / 2);
+                document.getElementById('particleSizeStatus').textContent = Math.max(5, Math.floor(quantumParameters.particleSize / 2));
+                document.getElementById('mainColorStatus').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
+                document.getElementById('rotationFactorStatus').textContent = quantumParameters.rotationFactor.toFixed(4);
+                document.getElementById('decayRateStatus').textContent = quantumParameters.decayRate.toFixed(4);
+                
+                // 更新標籤文字
+                document.querySelector('.status-item:nth-child(1) .status-label').textContent = '粒子數量:';
+                document.querySelector('.status-item:nth-child(2) .status-label').textContent = '粒子大小:';
+                document.querySelector('.status-item:nth-child(3) .status-label').textContent = '主色調:';
+                document.querySelector('.status-item:nth-child(4) .status-label').textContent = '旋轉速度:';
+                document.querySelector('.status-item:nth-child(5) .status-label').textContent = '速度衰減:';
+            } else {
+                // 顯示量子藝術畫布的參數
+                document.getElementById('particleCountStatus').textContent = quantumParameters.particleCount;
+                document.getElementById('particleSizeStatus').textContent = quantumParameters.particleSize;
+                document.getElementById('mainColorStatus').textContent = `(${quantumParameters.mainRed}, ${quantumParameters.mainGreen}, ${quantumParameters.mainBlue})`;
+                document.getElementById('rotationFactorStatus').textContent = quantumParameters.rotationFactor.toFixed(4);
+                document.getElementById('decayRateStatus').textContent = quantumParameters.decayRate.toFixed(4);
+                
+                // 恢復原始標籤文字
+                document.querySelector('.status-item:nth-child(1) .status-label').textContent = '粒子數量:';
+                document.querySelector('.status-item:nth-child(2) .status-label').textContent = '粒子尺寸:';
+                document.querySelector('.status-item:nth-child(3) .status-label').textContent = '主色調:';
+                document.querySelector('.status-item:nth-child(4) .status-label').textContent = '旋轉因子:';
+                document.querySelector('.status-item:nth-child(5) .status-label').textContent = '衰減率:';
+            }
         }
 
         // 控制功能 - 暫停/繼續動畫
